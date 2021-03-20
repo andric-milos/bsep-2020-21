@@ -1,6 +1,6 @@
 package com.bezbednost.ftn.bsep.service.impl;
 
-import com.bezbednost.ftn.bsep.model.IssuerAndSubject;
+import com.bezbednost.ftn.bsep.model.IssuerAndSubjectData;
 import com.bezbednost.ftn.bsep.service.ICertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class CertificateService implements ICertificateService {
     private KeyStoreService keyStoreService;
 
     @Override
-    public void issueCertificate(IssuerAndSubject issuerAndSubjectData, String keyStorePassword) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException {
+    public void issueCertificate(IssuerAndSubjectData issuerAndSubjectData, String keyStorePassword) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException {
         if (this.keyStoreService.doesKeyStoreExist(issuerAndSubjectData.getCertificateRole().toString())) {
             try {
                 System.out.println("Success!");
