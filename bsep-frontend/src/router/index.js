@@ -2,6 +2,10 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../views/Home.vue";
 
+import AdminAddCertificate from "../views/admin/AdminAddCertificate.vue";
+import AdminsCertificates from "../views/admin/AdminsCertificates.vue";
+import AllCertificates from "../views/admin/AllCertificates.vue";
+
 Vue.use(VueRouter);
 
 const routes = [
@@ -9,6 +13,21 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home
+  },
+  {
+    path: "/admin/add-certificate",
+    name: "AdminAddCertificate",
+    component: AdminAddCertificate
+  },
+  {
+    path: "/admin/issued-certificates",
+    name: "AdminsCertificates",
+    component: AdminsCertificates
+  },
+  {
+    path: "/admin/all-certificates",
+    name: "AllCertificates",
+    component: AllCertificates
   },
   {
     path: "/about",
