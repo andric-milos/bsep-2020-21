@@ -29,4 +29,15 @@ public class SubjectData {
         this.endDate = endDate;
     }
 
+    /*
+    if we use this constructor to create SubjectData object, then we must additionally set
+    publicKey using setter
+     */
+    public SubjectData(X500Name x500name, String serialNumber, Date startDate, Date endDate) {
+        this.x500name = x500name;
+        this.serialNumber = serialNumber;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
 }
