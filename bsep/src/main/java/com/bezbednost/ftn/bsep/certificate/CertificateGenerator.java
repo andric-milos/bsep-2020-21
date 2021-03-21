@@ -8,11 +8,13 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import java.math.BigInteger;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -29,6 +31,8 @@ public class CertificateGenerator {
             //Parametar koji se prosledjuje je algoritam koji se koristi za potpisivanje sertifiakta
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
             //Takodje se navodi koji provider se koristi, u ovom slucaju Bouncy Castle
+            Security.addProvider(new BouncyCastleProvider());
+
             builder = builder.setProvider("BC");
 
 
@@ -36,7 +40,8 @@ public class CertificateGenerator {
             ContentSigner contentSigner = builder.build(issuerData.getPrivateKey());
 
             //Postavljaju se podaci za generisanje sertifiakta
-            X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(X500Name.getInstance(issuerData.getX500name()),
+            X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
+                    X500Name.getInstance(issuerData.getX500name()),
                     new BigInteger(subjectData.getSerialNumber()),
                     subjectData.getStartDate(),
                     subjectData.getEndDate(),

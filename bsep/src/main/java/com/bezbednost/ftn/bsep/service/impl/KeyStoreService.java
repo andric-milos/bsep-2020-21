@@ -15,7 +15,7 @@ import java.security.cert.X509Certificate;
 public class KeyStoreService implements IKeyStoreService {
     @Override
     public boolean doesKeyStoreExist(String certificateRole) {
-        File file = new File("file/pki/keystores/" + certificateRole + ".jks");
+        File file = new File("src/main/resources/keystores/" + certificateRole + ".jks");
         return file.exists();
     }
 
