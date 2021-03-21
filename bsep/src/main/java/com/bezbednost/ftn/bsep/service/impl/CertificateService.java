@@ -46,15 +46,22 @@ public class CertificateService implements ICertificateService {
         }
 
         if (issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailSubject()) != null) {
-            System.out.println("Subject as an issuer exists!");
+            System.out.println("Subject already exists!");
             throw new NonUniqueResultException();
         }
+        boolean isSelfSigned = issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED);
+
+        if (isSelfSigned && issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()) != null) {
+            System.out.println("Issuer already has a self signed certificate!");
+            throw new NonUniqueResultException();
+        }
+
 
         Long issuerId;
         Long subjectId;
 
         // saving to db
-        if (!issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED)) {
+        if (!isSelfSigned) {
             IssuerAndSubjectData subjectDataToDB = new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameSubject(), issuerAndSubjectData.getLastNameSubject(),
                     issuerAndSubjectData.getOrganizationSubject() , issuerAndSubjectData.getCountrySubject(),
                     issuerAndSubjectData.getCitySubject(), issuerAndSubjectData.getEmailSubject() , issuerAndSubjectData.getTypeOfEntity(),

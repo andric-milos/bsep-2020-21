@@ -8,8 +8,9 @@
 
         <h3 clas="p-2">Certificate type</h3>
         <select class="p-2" name="type" id="type" v-model="type">
-          <option value="ca">CA</option>
-          <option value="endUser">End-user</option>
+          <option value="SELF_SIGNED">Self-Signed</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="END_ENTITY">End-user</option>
         </select>
 
         <br><br>
@@ -59,6 +60,7 @@
 
 <script>
 import AdminNavbar from '../../components/navbars/AdminNavbar.vue';
+import axios from "axios";
 
   export default  {
     components: { AdminNavbar },
@@ -88,7 +90,28 @@ import AdminNavbar from '../../components/navbars/AdminNavbar.vue';
     },
     methods: {
       issue() {
+        var certificateData = {
+          firstNameSubject: this.subjectsFirstname,
+          lastNameSubject: this.subjectsLastname,
+          organizationSubject: this.subjectsOrganization,
+          countrySubject: this.subjectsCountryCode,
+          citySubject: this.subjectsCity,
+          emailSubject: this.subjectsEmail,
+          firstNameIssuer: this.issuersFirstname,
+          lastNameIssuer: this.issuersLastname,
+          organizationIssuer: this.issuersOrganization,
+          countryIssuer: this.issuertsCountryCode,
+          cityIssuer: this.issuersCity,
+          emailIssuer: this.issuersEmail,
+          certificateRole: this.type,
+          certificateStatus: 1
+        };
 
+        axios
+          .post(" http://localhost:8080/api/certificate/jksSifra", certificateData)
+          .catch(error => {
+            alert(error.response.data);
+          });
       }
     },
     computed: {
