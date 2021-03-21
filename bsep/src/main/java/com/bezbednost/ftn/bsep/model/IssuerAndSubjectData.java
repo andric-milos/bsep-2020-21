@@ -34,8 +34,8 @@ public class IssuerAndSubjectData {
 
     // private Long parent;
 
-    Date startDate;
-    Date expiringDate;
+    private Date startDate;
+    private Date expiringDate;
 
     public IssuerAndSubjectData(String firstNameIssuer,
                                 String lastNameIssuer,
