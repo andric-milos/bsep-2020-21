@@ -2,10 +2,7 @@ package com.bezbednost.ftn.bsep.service.impl;
 
 import com.bezbednost.ftn.bsep.certificate.CertificateGenerator;
 import com.bezbednost.ftn.bsep.certificate.Generators;
-import com.bezbednost.ftn.bsep.model.CertificateRole;
-import com.bezbednost.ftn.bsep.model.IssuerAndSubjectData;
-import com.bezbednost.ftn.bsep.model.IssuerData;
-import com.bezbednost.ftn.bsep.model.SubjectData;
+import com.bezbednost.ftn.bsep.model.*;
 import com.bezbednost.ftn.bsep.repository.IssuerAndSubjectDataRepository;
 import com.bezbednost.ftn.bsep.service.ICertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.*;
 
 @Service
 public class CertificateService implements ICertificateService {
@@ -162,6 +160,62 @@ public class CertificateService implements ICertificateService {
         }
     }
 
+    @Override
+    public Collection<IssuerAndSubjectData> getCertificates() {
+        return this.issuerAndSubjectDataRepository.getSSAndCA();
+    }
+
+    @Override
+    public void withdrawCertificate(String email) {
+
+        IssuerAndSubjectData forWithdraw = this.issuerAndSubjectDataRepository.findByEmail(email);
+        List<IssuerAndSubjectData> all = this.issuerAndSubjectDataRepository.findAll();
+
+        forWithdraw.setCertificateStatus(CertificateStatus.REVOKED);
+        this.issuerAndSubjectDataRepository.save(forWithdraw);
+
+        List<IssuerAndSubjectData> selfSigned = new ArrayList<>();
+        List<IssuerAndSubjectData> intermediate = new ArrayList<>();
+        List<IssuerAndSubjectData> endEntity = new ArrayList<>();
+
+        for (IssuerAndSubjectData issuerAndSubjectData : all) {
+            if (issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED)) {
+                selfSigned.add(issuerAndSubjectData);
+            } else if (issuerAndSubjectData.getCertificateRole().equals(CertificateRole.INTERMEDIATE)) {
+                intermediate.add(issuerAndSubjectData);
+            } else if (issuerAndSubjectData.getCertificateRole().equals(CertificateRole.END_ENTITY)) {
+                endEntity.add(issuerAndSubjectData);
+            }
+        }
+
+        Set<Long> ids = new HashSet<>();
+        ids.add(forWithdraw.getId());
+
+        if (forWithdraw.getCertificateRole().equals(CertificateRole.END_ENTITY)) {
+            System.out.println("Don't have children!");
+        } else {
+            for (IssuerAndSubjectData temp : intermediate) {
+                for (Long id : ids) {
+                    if (temp.getParentId().equals(id)) {
+                        temp.setCertificateStatus(CertificateStatus.REVOKED);
+                        this.issuerAndSubjectDataRepository.save(temp);
+                        ids.add(temp.getId());
+                        break;
+                    }
+                }
+            }
+
+            for (IssuerAndSubjectData temp2 : endEntity) {
+                for (Long id : ids) {
+                    if (temp2.getParentId().equals(id)) {
+                        temp2.setCertificateStatus(CertificateStatus.REVOKED);
+                        this.issuerAndSubjectDataRepository.save(temp2);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
 
 }

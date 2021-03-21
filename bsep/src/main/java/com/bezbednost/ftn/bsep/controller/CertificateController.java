@@ -36,4 +36,23 @@ public class CertificateController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping
+    public ResponseEntity<?> getCertificates() {
+        try {
+            return new ResponseEntity<>(this.certificateService.getCertificates(), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PutMapping(value="/withdraw/{certificateEmail}")
+    public ResponseEntity<?> withdrawCertificate(@PathVariable("certificateEmail") String certificateEmail){
+        try {
+            this.certificateService.withdrawCertificate(certificateEmail);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 }
