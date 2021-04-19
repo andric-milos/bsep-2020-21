@@ -1,4 +1,4 @@
-package com.bezbednost.ftn.bsep.service;
+package com.bezbednost.ftn.bsep.service.impl;
 
 import com.bezbednost.ftn.bsep.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
