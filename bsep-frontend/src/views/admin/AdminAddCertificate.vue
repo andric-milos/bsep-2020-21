@@ -49,7 +49,9 @@
         <input type="text" class="p-2" id="issuersCity" v-model="issuersCity">
         <label class="p-2">E-mail</label>
         <input type="text" class="p-2" id="issuersEmail" v-model="issuersEmail">
-                
+        <br><br>
+        <label class="p-2">JKS Password</label>
+        <input type="text" class="p-2" id="jksPassword" v-model="jksPassword">
         <br><br>
         <button type="submit" class="btn btn-primary" v-on:click.prevent="issue">Confirm</button>
       </form>
@@ -85,7 +87,8 @@ import axios from "axios";
         issuersEmail: undefined,
         type: undefined,
         validFrom: undefined,
-        validTo: undefined
+        validTo: undefined,
+        jksPassword: undefined
       }
     },
     methods: {
@@ -108,7 +111,7 @@ import axios from "axios";
         };
 
         axios
-          .post(" http://localhost:8080/api/certificate/jksSifra", certificateData)
+          .post(" http://localhost:8080/api/certificate/"+this.jksPassword, certificateData)
           .catch(error => {
             alert(error.response.data);
           });
