@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
-@RequestMapping(value = "/api/registration")
+@RequestMapping(path = "api/register")
 public class RegistrationController {
 
     private RegistrationService registrationService;
@@ -15,15 +15,5 @@ public class RegistrationController {
     @Autowired
     public RegistrationController(RegistrationService registrationService) {
         this.registrationService = registrationService;
-    }
-
-    @PostMapping
-    public String register(@RequestBody RegistrationRequest request) {
-        return registrationService.register(request);
-    }
-
-    @GetMapping(value = "/confirm")
-    public String confirm(@RequestParam("token") String token) {
-        return registrationService.confirmToken(token);
     }
 }
