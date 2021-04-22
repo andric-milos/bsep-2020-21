@@ -1,45 +1,16 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <form>
-      <h3>Email</h3>
-      <input type="text" id="email" v-model="email">
-      <h3>Password</h3>
-      <input type="password" id="password" v-model="password">
-      <br/>
-      <button type="submit" class="btn btn-success" style="margin-top:15px" v-on:click.prevent="login">Log In</button>
-
-    </form>
+   
   </div>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "HelloWorld",
   props: {
     msg: String
-  },
-  data () {
-    return {
-      email: undefined,
-      password: undefined
-    }
-  },
-    methods: {
-      login() {
-        var loginData = {
-          email: this.email,
-          password: this.password
-        };
-        axios
-          .post(" http://localhost:8080/api/auth/login/", loginData)
-          .catch(error => {
-            alert(error.response.data);
-          });
-      }
-    }
+  }
 };
 </script>
 
