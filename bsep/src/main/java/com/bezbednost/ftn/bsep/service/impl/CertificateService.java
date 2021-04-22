@@ -56,24 +56,21 @@ public class CertificateService implements ICertificateService {
             throw new NonUniqueResultException();
         }
 
-
         Long issuerId;
         Long subjectId;
 
         // saving to db
         if (!isSelfSigned) {
             IssuerAndSubjectData subjectDataToDB = new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameSubject(), issuerAndSubjectData.getLastNameSubject(),
-                    issuerAndSubjectData.getOrganizationSubject() , issuerAndSubjectData.getCountrySubject(),
-                    issuerAndSubjectData.getCitySubject(), issuerAndSubjectData.getEmailSubject() , issuerAndSubjectData.getTypeOfEntity(),
+                    issuerAndSubjectData.getOrganizationSubject(), issuerAndSubjectData.getCountrySubject(),
+                    issuerAndSubjectData.getCitySubject(), issuerAndSubjectData.getEmailSubject(), issuerAndSubjectData.getTypeOfEntity(),
                     issuerAndSubjectData.getCertificateRole(), issuerAndSubjectData.getKeyUsage(), issuerAndSubjectData.getExtendedKeyUsage());
-            Long parentId = issuerAndSubjectDataRepository.findByEmail
-                    (issuerAndSubjectData.getEmailIssuer()).getId();
+            Long parentId = issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()).getId();
             subjectDataToDB.setParentId(parentId);
 
             //System.out.println("extended " + issuerAndSubjectData.getExtendedKeyUsage()[0]);
             this.issuerAndSubjectDataRepository.save(subjectDataToDB);
             this.issuerAndSubjectDataRepository.flush();
-
         } else {
             IssuerAndSubjectData issuerDataToDB = new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameIssuer(), issuerAndSubjectData.getLastNameIssuer(),
                     issuerAndSubjectData.getOrganizationIssuer(), issuerAndSubjectData.getCountryIssuer(),
@@ -125,7 +122,7 @@ public class CertificateService implements ICertificateService {
         System.out.println(certificate.getIssuerX500Principal().getName());
         System.out.println("\n===== Podaci o vlasniku sertifikata =====");
         System.out.println(certificate.getSubjectX500Principal().getName());
-        System.out.println("\n===== Sertifikat =====");
+        System.out.println("\n===== Certificates =====");
         System.out.println("-------------------------------------------------------");
         System.out.println(certificate);
         System.out.println("-------------------------------------------------------");

@@ -2,7 +2,7 @@
   <div class="home">
     <admin-navbar></admin-navbar>
     <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <HelloWorld msg="Log In" />
   </div>
 </template>
 
