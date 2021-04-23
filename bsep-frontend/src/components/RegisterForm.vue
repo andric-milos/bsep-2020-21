@@ -88,6 +88,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
     export default  {
         name: 'RegisterForm',
         props: [],
@@ -127,10 +129,43 @@
                 let passwordIsValid = this.isPasswordValid();
                 let emailIsValid = this.isEmailValid();
 
+                /*
                 if (thereAreEmptyFields || !passwordIsValid || !emailIsValid)
                     alert("ne valja");
                 else
                     alert("ok je");
+                */
+                
+                if (!(thereAreEmptyFields || !passwordIsValid || !emailIsValid)) {
+                    var user = {
+                        "firstName" : this.firstName,
+                        "lastName" : this.lastName,
+                        "email" : this.email,
+                        "password" : this.password,
+                        "country" : this.country,
+                        "city" : this.city,
+                        "organization" : this.organization
+                    };
+
+                    axios
+                        .post("http://localhost:8080/api/registration", user)
+                        .then(response => {
+                            if (response.status == 200) {
+                                if (response.data == "EMAIL_IS_TAKEN") {
+                                    alert(this.email + " is already taken!");
+                                } else {
+                                    alert("Success! Now, you just need to confirm your e-mail address!");
+                                    location.reload();
+                                }
+                            } else {
+                                alert("You must properly fill the form!");
+                            }
+                            
+                        })
+                        .catch(error => {
+                            alert(error.response.data);
+                        });
+                }
             },
             areFieldsEmpty: function() {
                 let firstNameInput = document.getElementById("firstName");
