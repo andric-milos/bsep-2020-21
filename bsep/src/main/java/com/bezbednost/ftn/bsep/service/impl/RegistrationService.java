@@ -64,11 +64,13 @@ public class RegistrationService {
                 );
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException("Email is already confirmed!");
+            // throw new IllegalStateException("Email is already confirmed!");
+            return "EMAIL_ALREADY_CONFIRMED";
         }
 
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token has expired!");
+            // throw new IllegalStateException("Token has expired!");
+            return "TOKEN_HAS_EXPIRED";
         }
 
         // Podesiti confirmedAt i promeniti user-u enabled sa default-nog false na true
@@ -79,7 +81,7 @@ public class RegistrationService {
         user.setEnabled(true);
         userService.updateUser(user);
 
-        return "confirmed"; // for now
+        return user.getEmail();
     }
 
     private String buildEmail(String name, String link) {

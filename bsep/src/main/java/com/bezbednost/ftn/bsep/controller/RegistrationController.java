@@ -31,7 +31,16 @@ public class RegistrationController {
     }
 
     @GetMapping(value = "/confirm")
-    public String confirm(@RequestParam("token") String token) {
-        return registrationService.confirmToken(token);
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) {
+        // returnValue can be one of next values: email, "EMAIL_ALREADY_CONFIRMED", "TOKEN_HAS_EXPIRED"
+        String returnValue = registrationService.confirmToken(token);
+
+        if (returnValue.equals("EMAIL_ALREADY_CONFIRMED"))
+            return new ResponseEntity<>("<h1>Email has already been confirmed!</h1>", HttpStatus.OK);
+
+        if (returnValue.equals("TOKEN_HAS_EXPIRED"))
+            return new ResponseEntity<>("<h1>>Token has expired!</h1>", HttpStatus.OK);
+
+        return new ResponseEntity<>("<h1>Email " + returnValue + " has been confirmed!</h1>", HttpStatus.OK);
     }
 }
