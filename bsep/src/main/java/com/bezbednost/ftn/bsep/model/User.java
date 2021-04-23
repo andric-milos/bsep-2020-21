@@ -32,6 +32,12 @@ public class User implements UserDetails {
     @Column
     private String password;
     @Column
+    private String country;
+    @Column
+    private String city;
+    @Column
+    private String organization;
+    @Column
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
     @Column
@@ -44,12 +50,18 @@ public class User implements UserDetails {
                 String lastName,
                 String email,
                 String password,
-                UserRole userRole) {
+                UserRole userRole,
+                String country,
+                String city,
+                String organization) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.userRole = userRole;
+        this.country = country;
+        this.city = city;
+        this.organization = organization;
     }
 
     @Override
@@ -74,6 +86,18 @@ public class User implements UserDetails {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getOrganization() {
+        return organization;
     }
 
     @Override

@@ -35,7 +35,10 @@ public class RegistrationService {
                         request.getLastName(),
                         request.getEmail(),
                         request.getPassword(),
-                        UserRole.USER
+                        UserRole.USER,
+                        request.getCountry(),
+                        request.getCity(),
+                        request.getOrganization()
                 )
         );
 
