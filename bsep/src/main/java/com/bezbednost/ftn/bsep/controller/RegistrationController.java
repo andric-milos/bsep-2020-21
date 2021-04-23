@@ -21,11 +21,14 @@ public class RegistrationController {
 
     @PostMapping
     public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
-        // returnValue is either "REQUEST_NOT_VALID" or registration token
+        // returnValue can be one of next values: "REQUEST_NOT_VALID", "EMAIL_IS_TAKEN" or registration token
         String returnValue = registrationService.register(request);
 
         if (returnValue.equals("REQUEST_NOT_VALID"))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        if (returnValue.equals("EMAIL_IS_TAKEN"))
+            return new ResponseEntity<>("EMAIL_IS_TAKEN", HttpStatus.OK);
 
         return new ResponseEntity<>(returnValue, HttpStatus.OK);
     }

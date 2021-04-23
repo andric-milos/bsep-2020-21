@@ -48,6 +48,9 @@ public class RegistrationService {
                 )
         );
 
+        if (token.equals("EMAIL_IS_TAKEN"))
+            return "EMAIL_IS_TAKEN";
+
         String link = "http://localhost:8080/api/registration/confirm?token=" + token;
         emailService.sendConfirmationEmail(
                 request.getEmail(),
