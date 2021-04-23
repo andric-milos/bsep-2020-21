@@ -5,6 +5,10 @@
 				<li class="nav-item">
 					<a class="nav-link" href="#/">Home</a>
 				</li>
+        <!-- This register nav-link is temporary - it should be inside of HomeNavbar which currently doesn't exist -->
+        <li class="nav-item">
+					<a class="nav-link" href="#/register">Register</a>
+				</li>
         <li>
           <a class="nav-link" href="#/admin/add-certificate">Add new certificate</a>
         </li>
