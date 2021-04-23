@@ -5,6 +5,7 @@ import com.bezbednost.ftn.bsep.model.User;
 import com.bezbednost.ftn.bsep.model.UserRole;
 import com.bezbednost.ftn.bsep.token.RegistrationConfirmationToken;
 import com.bezbednost.ftn.bsep.token.RegistrationConfirmationTokenService;
+import com.bezbednost.ftn.bsep.validation.RegistrationRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,12 @@ public class RegistrationService {
     }
 
     public String register(RegistrationRequest request) {
-        // TODO: check if email is valid (if not, throw an exception)
+        boolean requestIsValid = RegistrationRequestValidator.validate(request);
+
+        if (!requestIsValid)
+            return "REQUEST_NOT_VALID";
+
+        RegistrationRequestValidator.trim(request);
 
         String token = userService.signUp(
                 new User(

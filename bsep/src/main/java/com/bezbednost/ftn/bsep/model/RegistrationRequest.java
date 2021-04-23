@@ -1,20 +1,18 @@
 package com.bezbednost.ftn.bsep.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class RegistrationRequest {
-    private final String firstName;
-    private final String lastName;
-    private final String email;
-    private final String password;
-    private final String country;
-    private final String city;
-    private final String organization;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private String country;
+    private String city;
+    private String organization;
 }
