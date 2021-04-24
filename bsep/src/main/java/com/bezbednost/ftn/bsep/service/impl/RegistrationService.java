@@ -5,6 +5,7 @@ import com.bezbednost.ftn.bsep.model.User;
 import com.bezbednost.ftn.bsep.model.UserRole;
 import com.bezbednost.ftn.bsep.token.RegistrationConfirmationToken;
 import com.bezbednost.ftn.bsep.token.RegistrationConfirmationTokenService;
+import com.bezbednost.ftn.bsep.validation.RegistrationRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,12 @@ public class RegistrationService {
     }
 
     public String register(RegistrationRequest request) {
-        // TODO: check if email is valid (if not, throw an exception)
+        boolean requestIsValid = RegistrationRequestValidator.validate(request);
+
+        if (!requestIsValid)
+            return "REQUEST_NOT_VALID";
+
+        RegistrationRequestValidator.trim(request);
 
         String token = userService.signUp(
                 new User(
@@ -35,9 +41,15 @@ public class RegistrationService {
                         request.getLastName(),
                         request.getEmail(),
                         request.getPassword(),
-                        UserRole.USER
+                        UserRole.USER,
+                        request.getCountry(),
+                        request.getCity(),
+                        request.getOrganization()
                 )
         );
+
+        if (token.equals("EMAIL_IS_TAKEN"))
+            return "EMAIL_IS_TAKEN";
 
         String link = "http://localhost:8080/api/registration/confirm?token=" + token;
         emailService.sendConfirmationEmail(
@@ -55,11 +67,13 @@ public class RegistrationService {
                 );
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException("Email is already confirmed!");
+            // throw new IllegalStateException("Email is already confirmed!");
+            return "EMAIL_ALREADY_CONFIRMED";
         }
 
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token has expired!");
+            // throw new IllegalStateException("Token has expired!");
+            return "TOKEN_HAS_EXPIRED";
         }
 
         // Podesiti confirmedAt i promeniti user-u enabled sa default-nog false na true
@@ -70,7 +84,7 @@ public class RegistrationService {
         user.setEnabled(true);
         userService.updateUser(user);
 
-        return "confirmed"; // for now
+        return user.getEmail();
     }
 
     private String buildEmail(String name, String link) {
