@@ -43,7 +43,8 @@ public class UserService implements UserDetailsService {
         if (userExists) {
             // TODO: if user does exist and it hasn't confirmed its email, send the confirmation mail again, otherwise just throw email is already takens exception
 
-            throw new IllegalStateException("Email " + user.getEmail() + " is already taken!");
+            // throw new IllegalStateException("Email " + user.getEmail() + " is already taken!");
+            return "EMAIL_IS_TAKEN";
         }
 
         // TODO: hash & salt instead of Bcrypt
@@ -61,8 +62,6 @@ public class UserService implements UserDetailsService {
         );
 
         registrationConfirmationTokenService.saveConfirmationToken(confirmationToken);
-
-        // TODO: send email
 
         return token;
     }

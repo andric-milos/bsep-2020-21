@@ -23,20 +23,16 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
     private String firstName;
-    @Column
     private String lastName;
-    @Column
     private String email;
-    @Column
     private String password;
-    @Column
+    private String country;
+    private String city;
+    private String organization;
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
-    @Column
     private Boolean locked = false; // default value is false
-    @Column
     private Boolean enabled = false;    // default value is false
 
     // constructor without id
@@ -44,12 +40,18 @@ public class User implements UserDetails {
                 String lastName,
                 String email,
                 String password,
-                UserRole userRole) {
+                UserRole userRole,
+                String country,
+                String city,
+                String organization) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.userRole = userRole;
+        this.country = country;
+        this.city = city;
+        this.organization = organization;
     }
 
     @Override
@@ -74,6 +76,18 @@ public class User implements UserDetails {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getOrganization() {
+        return organization;
     }
 
     @Override

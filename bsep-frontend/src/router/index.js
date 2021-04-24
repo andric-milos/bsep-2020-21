@@ -6,6 +6,7 @@ import Home from "../views/Home.vue";
 import AdminAddCertificate from "../views/admin/AdminAddCertificate.vue";
 import AdminsCertificates from "../views/admin/AdminsCertificates.vue";
 import AllCertificates from "../views/admin/AllCertificates.vue";
+import Register from "../views/Register.vue";
 
 Vue.use(VueRouter);
 
@@ -19,6 +20,11 @@ const routes = [
     path: "/home",
     name: "Home",
     component: Home
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: Register
   },
   {
     path: "/admin/add-certificate",
