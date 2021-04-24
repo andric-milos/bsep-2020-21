@@ -34,7 +34,7 @@ export default {
           password: this.password
         };
         axios
-          .post(" http://localhost:8080/api/auth/login/", loginData)
+          .post(" https://localhost:8443/api/auth/login/", loginData)
           .then(response => {
               var userInfo = response.data;
               //saving the token
