@@ -5,6 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class RegistrationRequest {
@@ -15,4 +16,5 @@ public class RegistrationRequest {
     private String country;
     private String city;
     private String organization;
+
 }

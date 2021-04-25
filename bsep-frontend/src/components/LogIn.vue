@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <form>
       <h3>Email</h3>
-      <input type="text" id="email" v-model="email">
+      <input type="email" id="email" v-model="email">
       <h3>Password</h3>
       <input type="password" id="password" v-model="password">
       <br/>
@@ -41,7 +41,9 @@ export default {
               localStorage.setItem('userInfo', JSON.stringify(userInfo));
               //accessing the token
               console.log(JSON.parse(localStorage.getItem('userInfo')));
-              this.$router.push('/home');
+              // if user role
+              this.$router.push('/home-user');
+              // if admin role go to admin home page
             })
             .catch(function(){
                 alert("Error.");

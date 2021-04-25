@@ -17,5 +17,5 @@ export default {
     HelloWorld,
     AdminNavbar
   }
-};
+}
 </script>
