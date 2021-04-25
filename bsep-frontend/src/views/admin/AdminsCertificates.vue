@@ -26,6 +26,8 @@ import axios from "axios";
     },
     created() {
       var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
+      var vm = this;
+
       axios
         .get(" https://localhost:8443/api/certificate", {
               headers: {
@@ -34,9 +36,14 @@ import axios from "axios";
             })
           .then(response => {
             console.log(response);
-          })
-          .catch(function(){
-              alert("Error.");
+          }) 
+          .catch(function(error){
+              if(error.response.status === 403){
+                //vm.msg="Forbidden access! You don't have permission to view this page!"
+                vm.$router.push('/forbidden-access');
+              } else {
+                alert("Error.");
+              }
           });
       
     },
