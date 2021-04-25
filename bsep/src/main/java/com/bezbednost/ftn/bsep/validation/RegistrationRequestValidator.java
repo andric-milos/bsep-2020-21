@@ -27,25 +27,45 @@ public class RegistrationRequestValidator {
             return false;
         else if (request.getFirstName().trim().equals(""))
             return false;
+        else if (request.getFirstName().trim().contains("<") ||
+                 request.getFirstName().trim().contains(">") ||
+                 request.getFirstName().trim().contains("\""))
+            return false;
 
         if (request.getLastName() == null)
             return false;
         else if (request.getLastName().trim().equals(""))
+            return false;
+        else if (request.getFirstName().trim().contains("<") ||
+                request.getFirstName().trim().contains(">") ||
+                request.getFirstName().trim().contains("\""))
             return false;
 
         if (request.getCountry() == null)
             return false;
         else if (request.getCountry().trim().equals(""))
             return false;
+        else if (request.getFirstName().trim().contains("<") ||
+                request.getFirstName().trim().contains(">") ||
+                request.getFirstName().trim().contains("\""))
+            return false;
 
         if (request.getCity() == null)
             return false;
         else if (request.getCity().trim().equals(""))
             return false;
+        else if (request.getFirstName().trim().contains("<") ||
+                request.getFirstName().trim().contains(">") ||
+                request.getFirstName().trim().contains("\""))
+            return false;
 
         if (request.getOrganization() == null)
             return false;
         else if (request.getOrganization().trim().equals(""))
+            return false;
+        else if (request.getFirstName().trim().contains("<") ||
+                request.getFirstName().trim().contains(">") ||
+                request.getFirstName().trim().contains("\""))
             return false;
 
         // email validation
