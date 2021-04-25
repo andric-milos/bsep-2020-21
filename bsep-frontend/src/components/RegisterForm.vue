@@ -148,7 +148,7 @@ import axios from "axios";
                     };
 
                     axios
-                        .post("http://localhost:8080/api/registration", user)
+                        .post("https://localhost:8443/api/registration", user)
                         .then(response => {
                             if (response.status == 200) {
                                 if (response.data == "EMAIL_IS_TAKEN") {

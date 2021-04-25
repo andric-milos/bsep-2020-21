@@ -3,10 +3,10 @@
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
 			<ul class="navbar-nav">
 				<li class="nav-item">
-					<a class="nav-link" href="#/login">Log In</a>
+					<a class="nav-link" href="#/home">Home</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#/home">Home</a>
+					<a class="nav-link" href="#/login">Log In</a>
 				</li>
         <!-- This register nav-link is temporary - it should be inside of HomeNavbar which currently doesn't exist -->
         <li class="nav-item">
