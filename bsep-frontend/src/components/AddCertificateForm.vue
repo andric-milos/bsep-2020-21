@@ -14,7 +14,7 @@
         <br><br>
         <h3 clas="p-2">Date</h3>
         <label class="p-2">Valid from</label>
-        <input type="date" class="p-2" id="validFrom" v-model="validFrom">
+        <input type="date" class="p-2" id="validFrom" v-model="validFrom" min="new Date()">
         <label class="p-2">Valid to</label>
         <input type="date" class="p-2" id="validTo" v-model="validTo">
 
@@ -64,7 +64,7 @@ export default {
   name: "AddCertificateForm",
   props:[],
   mounted(){
-
+    document.getElementById('validFrom').setAttribute('min', new Date().toISOString().split("T")[0]);
   },
    data () {
       return {
@@ -104,9 +104,19 @@ export default {
           certificateRole: this.type,
           certificateStatus: 1
         };
+        var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
 
         axios
-          .post(" https://localhost:8443/api/certificate/"+this.jksPassword, certificateData)
+          .post(" https://localhost:8443/api/certificate/"+this.jksPassword, 
+          certificateData,{
+              headers: {
+                'Authorization': `Bearer ${token}` 
+              }
+            })
+            .then(() => {
+                alert("Success!");
+                location.reload();
+            })
           .catch(error => {
             alert(error.response.data);
           });
