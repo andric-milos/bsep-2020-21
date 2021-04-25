@@ -41,8 +41,7 @@ export default {
               localStorage.setItem('userInfo', JSON.stringify(userInfo));
               //accessing the token
               var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
-                console.log(token)
-                axios
+              axios
                 .get(" https://localhost:8443/api/user/whoami", {
                   headers: {
                     'Authorization': `Bearer ${token}` 

@@ -13,13 +13,10 @@
                 <a class="nav-link" href="#/register">Register</a>
             </li>
             <li>
-                <a class="nav-link" href="#/admin/add-certificate">Add new certificate</a>
+                <a class="nav-link" href="#/user/add-certificate">Add new certificate</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#/admin/issued-certificates">Issued certificates</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#/admin/all-certificates">All certificates</a>
+                <a class="nav-link" href="#/user/issued-certificates">Issued certificates</a>
             </li>
       </ul>
 		</nav> 

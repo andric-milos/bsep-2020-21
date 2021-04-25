@@ -8,7 +8,10 @@ import AdminAddCertificate from "../views/admin/AdminAddCertificate.vue";
 import AdminsCertificates from "../views/admin/AdminsCertificates.vue";
 import AllCertificates from "../views/admin/AllCertificates.vue";
 import Register from "../views/Register.vue";
-import SqlInjection from "../views/user/SqlInjection.vue";
+
+import UserCertificates from "../views/user/UserCertificates.vue";
+import UserAddCertificate from "../views/user/UserAddCertificate.vue";
+import ForbiddenAccess from "../views/ForbiddenAccess.vue";
 
 Vue.use(VueRouter);
 
@@ -34,14 +37,29 @@ const routes = [
     component: Register
   },
   {
+    path: "/forbidden-access",
+    name: "ForbiddenAccess",
+    component: ForbiddenAccess
+  },
+  {
     path: "/admin/add-certificate",
     name: "AdminAddCertificate",
     component: AdminAddCertificate
   },
   {
+    path: "/user/add-certificate",
+    name: "UserAddCertificate",
+    component: UserAddCertificate
+  },
+  {
     path: "/admin/issued-certificates",
     name: "AdminsCertificates",
     component: AdminsCertificates
+  },
+  {
+    path: "/user/issued-certificates",
+    name: "UserCertificates",
+    component: UserCertificates
   },
   {
     path: "/admin/all-certificates",
@@ -56,11 +74,6 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/About.vue")
-  },
-  {
-    path: "/sql-injection",
-    name: "SqlInjection",
-    component: SqlInjection
   },
   {
     path: "",
