@@ -7,6 +7,7 @@
 
 <script>
 import AdminNavbar from "../../components/navbars/AdminNavbar.vue";
+import axios from "axios";
 
   export default  {
     components: { AdminNavbar },
@@ -22,6 +23,22 @@ import AdminNavbar from "../../components/navbars/AdminNavbar.vue";
     },
     methods: {
 
+    },
+    created() {
+      var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
+      axios
+        .get(" https://localhost:8443/api/certificate", {
+              headers: {
+                'Authorization': `Bearer ${token}` 
+              }
+            })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(function(){
+              alert("Error.");
+          });
+      
     },
     computed: {
 

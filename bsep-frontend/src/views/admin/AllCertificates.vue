@@ -1,8 +1,9 @@
 <template>
   <div class="all-certificates">
     <admin-navbar></admin-navbar>
+    <h1>{{ msg }}</h1>
     <table class="table p-2 mt-2 ml-2 mr-4 table-dark table-striped table-hover">
-      <thead>
+      <!-- <thead>
         <tr>
           <th scope="col">Serial number</th>
           <th scope="col">Subject</th>
@@ -45,26 +46,50 @@
           <td>01.01.2022.</td>
           <td>qwesdgdsggd</td>
         </tr>
-      </tbody>
+      </tbody> -->
     </table>
   </div>
 </template>
 
 <script>
 import AdminNavbar from '../../components/navbars/AdminNavbar.vue';
+import axios from "axios";
 
   export default  {
     components: { AdminNavbar },
     name: "AllCertificates",
     props: [],
-    mounted () {
-
-    },
     data () {
       return {
-
+        msg: ""
       }
     },
+    mounted () {
+    },
+    created() {
+      var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
+      var vm = this;
+
+      axios
+        .get(" https://localhost:8443/api/certificate", {
+              headers: {
+                'Authorization': `Bearer ${token}` 
+              }
+            })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(function(error){
+              if(error.response.status === 403){
+                //vm.msg="Forbidden access! You don't have permission to view this page!"
+                vm.$router.push('/forbidden-access');
+              } else {
+                alert("Error.");
+              }
+          });
+      
+    },
+   
     methods: {
 
     },
