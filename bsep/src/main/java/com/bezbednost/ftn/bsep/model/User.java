@@ -44,7 +44,8 @@ public class User implements UserDetails {
                 UserRole userRole,
                 String country,
                 String city,
-                String organization) {
+                String organization,
+                Set authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -53,6 +54,7 @@ public class User implements UserDetails {
         this.country = country;
         this.city = city;
         this.organization = organization;
+        this.authorities = authorities;
     }
 
 //    @Override

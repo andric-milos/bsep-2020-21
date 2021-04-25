@@ -29,6 +29,7 @@ public class CertificateService implements ICertificateService {
 
     private CertificateGenerator certificateGenerator = new CertificateGenerator();
 
+
     @Autowired
     private IssuerAndSubjectDataRepository issuerAndSubjectDataRepository;
 
@@ -92,7 +93,8 @@ public class CertificateService implements ICertificateService {
         KeyPair keyPairIssuer = generators.generateKeyPair();
 
         // name is serial num for now instead of id
-        SubjectData subjectData = generators.generateSubjectData(subjectId, issuerAndSubjectData.getFirstNameSubject(),
+        SubjectData subjectData = generators.generateSubjectData(subjectId,
+                issuerAndSubjectData.getFirstNameSubject(),
                 issuerAndSubjectData.getLastNameSubject(),
                 issuerAndSubjectData.getOrganizationSubject(), issuerAndSubjectData.getCountrySubject(),
                 issuerAndSubjectData.getCitySubject(), issuerAndSubjectData.getEmailSubject(),
@@ -221,5 +223,11 @@ public class CertificateService implements ICertificateService {
         }
     }
 
+    @Override
+    public Collection<IssuerAndSubjectData> GetChildCertificate (String email) {
+        IssuerAndSubjectData issuer = this.issuerAndSubjectDataRepository.findByEmailIssuer(email);
+
+        return this.issuerAndSubjectDataRepository.findByParentId(issuer.getId());
+    }
 
 }

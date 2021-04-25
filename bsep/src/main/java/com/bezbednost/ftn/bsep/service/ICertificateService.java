@@ -13,5 +13,5 @@ public interface ICertificateService {
     void issueCertificate(IssuerAndSubjectData issuerAndSubjectData, String keyStorePassword) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException;
     Collection<IssuerAndSubjectData> getCertificates();
     void withdrawCertificate(String email);
-
+    Collection<IssuerAndSubjectData> GetChildCertificate (String email);
 }

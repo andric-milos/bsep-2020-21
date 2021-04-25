@@ -65,6 +65,7 @@ export default {
   props:[],
   mounted(){
     document.getElementById('validFrom').setAttribute('min', new Date().toISOString().split("T")[0]);
+    document.getElementById('validTo').setAttribute('min', new Date().toISOString().split("T")[0]);
   },
    data () {
       return {

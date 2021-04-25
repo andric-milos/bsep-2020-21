@@ -1,10 +1,13 @@
 package com.bezbednost.ftn.bsep.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 
+@NoArgsConstructor
 @Entity
 public class Authority implements GrantedAuthority {
 
@@ -36,6 +39,10 @@ public class Authority implements GrantedAuthority {
     }
 
     public void setName(String name) {
+        this.name = name;
+    }
+
+    public Authority(String name){
         this.name = name;
     }
 }

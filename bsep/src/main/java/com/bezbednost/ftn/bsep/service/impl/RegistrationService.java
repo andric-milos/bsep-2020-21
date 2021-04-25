@@ -1,5 +1,6 @@
 package com.bezbednost.ftn.bsep.service.impl;
 
+import com.bezbednost.ftn.bsep.model.Authority;
 import com.bezbednost.ftn.bsep.model.RegistrationRequest;
 import com.bezbednost.ftn.bsep.model.User;
 import com.bezbednost.ftn.bsep.model.UserRole;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class RegistrationService {
@@ -17,14 +20,16 @@ public class RegistrationService {
     private UserService userService;
     private RegistrationConfirmationTokenService registrationConfirmationTokenService;
     private EmailService emailService;
+    private AuthorityService authorityService;
 
     @Autowired
     public RegistrationService(UserService userService,
                                RegistrationConfirmationTokenService registrationConfirmationTokenService,
-                               EmailService emailService) {
+                               EmailService emailService, AuthorityService authorityService) {
         this.userService = userService;
         this.registrationConfirmationTokenService = registrationConfirmationTokenService;
         this.emailService = emailService;
+        this.authorityService = authorityService;
     }
 
     public String register(RegistrationRequest request) {
@@ -35,6 +40,10 @@ public class RegistrationService {
 
         RegistrationRequestValidator.trim(request);
 
+        // user is always registered, not admin!
+        Set<Authority> auth = new HashSet<>();
+        auth = this.authorityService.findByName("USER");
+
         String token = userService.signUp(
                 new User(
                         request.getFirstName(),
@@ -44,7 +53,8 @@ public class RegistrationService {
                         UserRole.USER,
                         request.getCountry(),
                         request.getCity(),
-                        request.getOrganization()
+                        request.getOrganization(),
+                        auth
                 )
         );
 

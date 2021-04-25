@@ -2,7 +2,7 @@
   <div class="all-certificates">
     <admin-navbar></admin-navbar>
     <h1>{{ msg }}</h1>
-    <table class="table p-2 mt-2 ml-2 mr-4 table-dark table-striped table-hover">
+    <table id="certTable" class="table p-2 mt-2 ml-2 mr-4 table-dark table-striped table-hover">
       <thead>
           <tr>
             <th scope="col">Status</th>

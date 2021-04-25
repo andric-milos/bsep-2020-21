@@ -49,7 +49,8 @@ public class Generators {
             this.buildData(builder, firstName, lastName, organization, country, city, email, sn.toString());
 
 
-            return new SubjectData(keyPairSubject.getPublic(), builder.build(), sn.toString(), startDate, endDate);
+            return new SubjectData(keyPairSubject.getPublic(), builder.build(),
+                    sn.toString(), startDate, endDate);
         } catch (Exception e) {
             e.printStackTrace();
         }
