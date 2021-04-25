@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <admin-navbar></admin-navbar>
+    <navbar></navbar>
     <img alt="Vue logo" src="../assets/logo.png" />
     <LogIn msg="Log In" />
   </div>
@@ -9,13 +9,13 @@
 <script>
 // @ is an alias to /src
 import LogIn from "@/components/LogIn.vue";
-import AdminNavbar from "../components/navbars/AdminNavbar.vue"
+import Navbar from "../components/navbars/Navbar.vue"
 
 export default {
   name: "Login",
   components: {
     LogIn,
-    AdminNavbar
+    Navbar
   }
 };
 </script>

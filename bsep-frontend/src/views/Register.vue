@@ -1,18 +1,18 @@
 <template>
   <div>
-    <admin-navbar></admin-navbar>
+    <navbar></navbar>
     <register-form></register-form>
   </div>
 </template>
 
 <script>
-import AdminNavbar from "../components/navbars/AdminNavbar";
+import Navbar from "../components/navbars/Navbar";
 import RegisterForm from "../components/RegisterForm";
 
     export default  {
         name: 'Register',
         components: {
-            AdminNavbar,
+            Navbar,
             RegisterForm
         },
         data () {
