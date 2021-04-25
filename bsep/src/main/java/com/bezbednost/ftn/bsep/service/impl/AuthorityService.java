@@ -48,7 +48,6 @@ public class AuthorityService implements IAuthorityService {
 
     @Override
     public UserTokenState login(JwtAuthenticationRequest authenticationRequest) {
-        System.out.println(authenticationRequest.getEmail());
         final Authentication authentication = authenticationManager.
                 authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
                         authenticationRequest.getPassword()));

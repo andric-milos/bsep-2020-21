@@ -5,6 +5,7 @@ import com.bezbednost.ftn.bsep.service.impl.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,8 +21,8 @@ public class CertificateController {
 
     @Autowired
     private CertificateService certificateService;
-
     @PostMapping(value = "/{keyStorePassword}")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> issueCertificate(@RequestBody IssuerAndSubjectData issuerAndSubjectData, @PathVariable("keyStorePassword") String keyStorePassword) {
         try {
             this.certificateService.issueCertificate(issuerAndSubjectData, keyStorePassword);
@@ -37,6 +38,7 @@ public class CertificateController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getCertificates() {
         try {
             return new ResponseEntity<>(this.certificateService.getCertificates(), HttpStatus.OK);
@@ -47,6 +49,7 @@ public class CertificateController {
     }
 
     @PutMapping(value="/withdraw/{certificateEmail}")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> withdrawCertificate(@PathVariable("certificateEmail") String certificateEmail){
         try {
             this.certificateService.withdrawCertificate(certificateEmail);

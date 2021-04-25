@@ -40,10 +40,27 @@ export default {
               //saving the token
               localStorage.setItem('userInfo', JSON.stringify(userInfo));
               //accessing the token
-              console.log(JSON.parse(localStorage.getItem('userInfo')));
-              // if user role
-              this.$router.push('/home-user');
-              // if admin role go to admin home page
+              var token = JSON.parse(localStorage.getItem('userInfo')).accessToken;
+                console.log(token)
+                axios
+                .get(" https://localhost:8443/api/user/whoami", {
+                  headers: {
+                    'Authorization': `Bearer ${token}` 
+                  }
+                })
+                .then(response => {
+                  if(response.data.userRoles.includes("ADMIN"))
+                     this.$router.push('/home');
+                  else if(response.data.userRoles.includes("USER"))
+                    this.$router.push('/home-user');
+                  else
+                    alert("Error (invalid role).")
+                  
+                })
+                .catch(function(){
+                    alert("Error.");
+                });
+
             })
             .catch(function(){
                 alert("Error.");

@@ -30,6 +30,11 @@
   export default  {
     name: 'UserNavbar',
     props: [],
+    data () {
+    return {
+      user: undefined
+    }
+  },
     created() {
         console.log(JSON.parse(localStorage.getItem('userInfo')));
     },

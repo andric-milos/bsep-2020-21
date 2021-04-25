@@ -1,73 +1,81 @@
 package com.bezbednost.ftn.bsep.security.config;
 
 import com.bezbednost.ftn.bsep.security.TokenUtils;
+import com.bezbednost.ftn.bsep.security.auth.RestAuthenticationEntryPoint;
+import com.bezbednost.ftn.bsep.security.auth.TokenAuthenticationFilter;
 import com.bezbednost.ftn.bsep.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebMvc
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private UserService userService;
-    private TokenUtils tokenUtils;
 
     @Autowired
-    public WebSecurityConfig(BCryptPasswordEncoder bCryptPasswordEncoder,
-                             UserService userService, TokenUtils tokenUtils) {
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.userService = userService;
-        this.tokenUtils = tokenUtils;
-    }
+    private UserService jwtUserDetailsService;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.httpBasic().disable();
+    @Autowired
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .antMatchers("/api/registration/**")
-            .permitAll()
-            .antMatchers("/api/auth/**")
-            .permitAll()
-            .anyRequest()
-            .authenticated().and()
-            .formLogin();
-
-        http
-            .requiresChannel()
-            .anyRequest()
-            .requiresSecure();
-    }
-
-
+    @Autowired
+    private TokenUtils tokenUtils;
+    
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(daoAuthenticationProvider());
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(jwtUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
     }
 
-    @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(bCryptPasswordEncoder);
-        provider.setUserDetailsService(userService);
-        return provider;
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+
+                .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
+
+                .authorizeRequests().antMatchers("/api/auth/**").permitAll().and()
+                .authorizeRequests().antMatchers("/api/registration/**").permitAll()
+
+                .anyRequest().authenticated().and()
+
+                .cors().and()
+
+                .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
+                        BasicAuthenticationFilter.class);
+
+        http.csrf().disable();
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/auth/**");
+        web.ignoring().antMatchers(HttpMethod.PUT, "/api/auth");
+        web.ignoring().antMatchers(HttpMethod.GET, "/", "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
+                "/**/*.css", "/**/*.js", "/assets/**");
+
     }
 }

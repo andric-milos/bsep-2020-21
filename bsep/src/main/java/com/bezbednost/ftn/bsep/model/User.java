@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -54,11 +55,16 @@ public class User implements UserDetails {
         this.organization = organization;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userRole.name());
-        return Collections.singletonList(authority);
-    }
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userRole.name());
+//        return Collections.singletonList(authority);
+//    }
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "user_authority",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
+    private Set<Authority> authorities;
 
     @Override
     public String getPassword() {
@@ -90,14 +96,40 @@ public class User implements UserDetails {
         return organization;
     }
 
+//    @Override
+//    public boolean isAccountNonExpired() {
+//        return true;    // for now
+//    }
+//
+//    @Override
+//    public boolean isAccountNonLocked() {
+//        return !locked;
+//    }
+//
+//    @Override
+//    public boolean isCredentialsNonExpired() {
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean isEnabled() {
+//        return enabled;
+//    }
+    public Set<Authority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
+    }
     @Override
     public boolean isAccountNonExpired() {
-        return true;    // for now
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return !locked;
+        return true;
     }
 
     @Override
@@ -107,6 +139,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return true;
     }
 }

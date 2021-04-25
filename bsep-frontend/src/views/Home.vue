@@ -2,7 +2,7 @@
   <div class="home">
     <admin-navbar></admin-navbar>
     <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome" />
+    <HelloWorld msg="Welcome (Logged in as admin)" />
   </div>
 </template>
 
