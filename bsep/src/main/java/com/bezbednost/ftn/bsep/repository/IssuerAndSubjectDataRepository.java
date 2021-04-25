@@ -16,8 +16,10 @@ public interface IssuerAndSubjectDataRepository  extends JpaRepository<IssuerAnd
     @Query(value = "SELECT * FROM issuer_and_subject_data d WHERE d.certificate_role = 'SELF_SIGNED' OR d.certificate_role = 'INTERMEDIATE' AND d.certificate_status = 'VALID'", nativeQuery = true)
     Collection<IssuerAndSubjectData> getSSAndCA();
 
-    IssuerAndSubjectData findByEmailIssuer(String email);
+    @Query(value = "SELECT * FROM issuer_and_subject_data", nativeQuery = true)
+    Collection<IssuerAndSubjectData> getAllCertificates();
 
+    @Query(value = "SELECT * FROM issuer_and_subject_data d WHERE d.parent_id = :id", nativeQuery = true)
     Collection<IssuerAndSubjectData> findByParentId(Long id);
 
     IssuerAndSubjectData findTopByOrderByIdDesc();

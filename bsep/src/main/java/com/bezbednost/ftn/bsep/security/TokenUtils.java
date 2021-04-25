@@ -82,7 +82,8 @@ public class TokenUtils {
         final String username = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
 
-        return (username != null && username.equals(userDetails.getUsername()));
+        return (username != null && username.equals(userDetails.getUsername())
+                && getExpirationDateFromToken(token).after(created));
     }
 
     public String getUsernameFromToken(String token) {

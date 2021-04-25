@@ -29,7 +29,6 @@ public class CertificateService implements ICertificateService {
 
     private CertificateGenerator certificateGenerator = new CertificateGenerator();
 
-
     @Autowired
     private IssuerAndSubjectDataRepository issuerAndSubjectDataRepository;
 
@@ -168,7 +167,8 @@ public class CertificateService implements ICertificateService {
 
     @Override
     public Collection<IssuerAndSubjectData> getCertificates() {
-        return this.issuerAndSubjectDataRepository.getSSAndCA();
+        //return this.issuerAndSubjectDataRepository.getSSAndCA();
+        return this.issuerAndSubjectDataRepository.getAllCertificates();
     }
 
     @Override
@@ -225,9 +225,12 @@ public class CertificateService implements ICertificateService {
 
     @Override
     public Collection<IssuerAndSubjectData> GetChildCertificate (String email) {
-        IssuerAndSubjectData issuer = this.issuerAndSubjectDataRepository.findByEmailIssuer(email);
+        IssuerAndSubjectData issuer = this.issuerAndSubjectDataRepository.findByEmail(email);
 
-        return this.issuerAndSubjectDataRepository.findByParentId(issuer.getId());
+        if(issuer != null)
+            return this.issuerAndSubjectDataRepository.findByParentId(issuer.getId());
+        else
+            return null;
     }
 
 }

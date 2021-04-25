@@ -68,8 +68,7 @@ public class CertificateController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User user = (User) auth.getPrincipal();
-            this.certificateService.GetChildCertificate(user.getUsername());
-            return new ResponseEntity<>(this.certificateService.getCertificates(), HttpStatus.OK);
+            return new ResponseEntity<>(this.certificateService.GetChildCertificate(user.getUsername()), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
         }

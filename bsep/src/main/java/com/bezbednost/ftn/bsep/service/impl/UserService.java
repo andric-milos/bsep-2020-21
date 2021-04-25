@@ -17,18 +17,15 @@ import java.util.UUID;
 @Service
 public class UserService implements UserDetailsService {
 
+    @Autowired
     private UserRepository userRepository;
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
     private RegistrationConfirmationTokenService registrationConfirmationTokenService;
 
-    @Autowired
-    public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder bCryptPasswordEncoder,
-                       RegistrationConfirmationTokenService registrationConfirmationTokenService) {
-        this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.registrationConfirmationTokenService = registrationConfirmationTokenService;
-    }
+
+    public UserService() {}
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
