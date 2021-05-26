@@ -16,19 +16,28 @@ public class Generators {
     public Generators() {
     }
 
-    public IssuerData generateIssuerData(Long sn, PrivateKey privateKey, String firstName,
-                                         String lastName, String organization, String country,
-                                         String city, String email) {
-
+    public IssuerData generateIssuerData(Long sn,
+                                         PrivateKey privateKey,
+                                         String firstName,
+                                         String lastName,
+                                         String organization,
+                                         String country,
+                                         String city,
+                                         String email) {
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-
         this.buildData(builder, firstName, lastName, organization, country, city, email, sn.toString());
 
         return new IssuerData(privateKey, builder.build());
     }
 
-    public SubjectData generateSubjectData(Long sn, String firstName, String lastName, String organization,
-                                           String country, String city, String email,  CertificateRole role) {
+    public SubjectData generateSubjectData(Long sn,
+                                           String firstName,
+                                           String lastName,
+                                           String organization,
+                                           String country,
+                                           String city,
+                                           String email,
+                                           CertificateRole role) {
         try {
             KeyPair keyPairSubject = generateKeyPair();
             Date startDate = new Date();
@@ -48,9 +57,7 @@ public class Generators {
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
             this.buildData(builder, firstName, lastName, organization, country, city, email, sn.toString());
 
-
-            return new SubjectData(keyPairSubject.getPublic(), builder.build(),
-                    sn.toString(), startDate, endDate);
+            return new SubjectData(keyPairSubject.getPublic(), builder.build(), sn.toString(), startDate, endDate);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,28 +77,33 @@ public class Generators {
         return null;
     }
 
-    private void buildData(X500NameBuilder builder, String firstName, String lastName, String organization,
-                            String country, String city, String email, String sn) {
-
+    private void buildData(X500NameBuilder builder,
+                           String firstName,
+                           String lastName,
+                           String organization,
+                           String country,
+                           String city,
+                           String email,
+                           String sn) {
         builder.addRDN(BCStyle.GIVENNAME, firstName);
         builder.addRDN(BCStyle.SURNAME, lastName);
         builder.addRDN(BCStyle.O, organization);
         builder.addRDN(BCStyle.COUNTRY_OF_RESIDENCE, country);
         builder.addRDN(BCStyle.EmailAddress, email);
         builder.addRDN(BCStyle.UID, sn);
-
     }
 
-
-    private void buildDataWithoutId(X500NameBuilder builder, String firstName, String lastName, String organization,
-                           String country, String city, String email) {
-
+    private void buildDataWithoutId(X500NameBuilder builder,
+                                    String firstName,
+                                    String lastName,
+                                    String organization,
+                                    String country,
+                                    String city,
+                                    String email) {
         builder.addRDN(BCStyle.GIVENNAME, firstName);
         builder.addRDN(BCStyle.SURNAME, lastName);
         builder.addRDN(BCStyle.O, organization);
         builder.addRDN(BCStyle.COUNTRY_OF_RESIDENCE, country);
         builder.addRDN(BCStyle.EmailAddress, email);
-
     }
-
 }
