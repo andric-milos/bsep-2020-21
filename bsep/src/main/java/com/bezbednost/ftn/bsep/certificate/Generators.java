@@ -54,6 +54,8 @@ public class Generators {
 
             Date endDate = c.getTime();
 
+            /* builder variable, declared just under this comment, serves to build a X500Name object
+               -> check this.buildData method ... */
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
             this.buildData(builder, firstName, lastName, organization, country, city, email, sn.toString());
 
