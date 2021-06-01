@@ -2,6 +2,7 @@ package com.bezbednost.ftn.bsep.service.impl;
 
 import com.bezbednost.ftn.bsep.certificate.CertificateGenerator;
 import com.bezbednost.ftn.bsep.certificate.Generators;
+import com.bezbednost.ftn.bsep.dto.NewCertificateDTO;
 import com.bezbednost.ftn.bsep.model.*;
 import com.bezbednost.ftn.bsep.repository.IssuerAndSubjectDataRepository;
 import com.bezbednost.ftn.bsep.service.ICertificateService;
@@ -22,172 +23,133 @@ import java.util.*;
 @Service
 public class CertificateService implements ICertificateService {
 
-    @Autowired
     private KeyStoreService keyStoreService;
+    private UserService userService;
 
     private Generators generators = new Generators();
-
     private CertificateGenerator certificateGenerator = new CertificateGenerator();
 
-
-    @Autowired
     private IssuerAndSubjectDataRepository issuerAndSubjectDataRepository;
 
+    @Autowired
+    public CertificateService(KeyStoreService keyStoreService,
+                              UserService userService,
+                              IssuerAndSubjectDataRepository issuerAndSubjectDataRepository) {
+        this.keyStoreService = keyStoreService;
+        this.userService = userService;
+        this.issuerAndSubjectDataRepository = issuerAndSubjectDataRepository;
+    }
+
     @Override
-    public void issueCertificate(IssuerAndSubjectData issuerAndSubjectData, String keyStorePassword) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException {
+    public void issueCertificate(NewCertificateDTO newCertificateDTO) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException, UnrecoverableEntryException {
+        // repository.getOne throws EntityNotFoundException if entity isn't found
+        IssuerAndSubjectData issuerAndSubjectData = issuerAndSubjectDataRepository.getOne(newCertificateDTO.getId());
+        String keyStorePassword = newCertificateDTO.getKeyStorePassword();
+        User subject = userService.getUserById(newCertificateDTO.getSubjectID());
+
+        /* u getCertificateRole kao drugi parametar (issuersEmail) prosleđujemo
+         * issuerAndSubjectData.getEmailSubject() što i jeste email issuer-a, jer
+         * issuerAndSubjectData predstavlja podatke o issuer sertifikatu, što znači
+         * da je on tu subject ...
+         */
+        CertificateRole certificateRole = getCertificateRole(
+                newCertificateDTO.getCertificateType(),
+                issuerAndSubjectData.getEmailSubject(),
+                subject.getEmail()
+        );
+
         /* provera da li keystore postoji
          * ako ne postoji kreirati ga? */
-        if (this.keyStoreService.doesKeyStoreExist(issuerAndSubjectData.getCertificateRole().toString())) {
+        KeyStore keyStore = null;
+        if (this.keyStoreService.doesKeyStoreExist(certificateRole.toString())) {
             try {
                 System.out.println("Success!");
-                KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-                keyStore.load(new FileInputStream("src/main/resources/keystores/" + issuerAndSubjectData.getCertificateRole().toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
+                keyStore = KeyStore.getInstance("JKS", "SUN");
+                keyStore.load(new FileInputStream("src/main/resources/keystores/" + certificateRole.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
             } catch (IOException e) {
                 System.out.println("Wrong password!");
+                throw new KeyStoreException();
+            } catch (CertificateException e) {
+                System.out.println("Certificate couldn't be loaded!");
+                throw new KeyStoreException();
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("Algorithm couldn't be found!!");
                 throw new KeyStoreException();
             }
         }
 
-        /* u IssuerAndSubjectDataRepository klasi ima metoda findByEmail kojoj treba da prosledimo
-        *  email issuer-a i da nam povratna vrednosti bude objekat klase IssuerAndSubjectData čije je polje
-        *  issuer_email jednako tom mailu koji smo prosledili
-        *
-        *  1. greska ovde je sto je prosledjen emailSubject kao parametar umesto emailIssuer
-        *  2. greska: tako ogranicavamo da korisnik ne moze imati vise CA sertifikata, a to tako ne treba
-        */
-        if (issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailSubject()) != null) {
-            System.out.println("Subject already exists!");
-            throw new NonUniqueResultException();
-        }
+        assert keyStore != null;
+        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(issuerAndSubjectData.getAlias(), new KeyStore.PasswordProtection(keyStorePassword.toCharArray()));
+        PrivateKey issuersPrivateKey = entry.getPrivateKey();
 
-        /* ovu proveru ne treba ovako vršiti, jer ne treba na klijentu da imamo da izaberemo da li je
-        *  self signed, već ćemo da prepoznamo da li je self signed tako što je issuer = subject */
-        boolean isSelfSigned = issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED);
+        KeyPair keyPairSubject = generators.generateKeyPair();
 
-        /* kakve veze ima ako issuer već ima self signed sertificate, on sebi može da izda koliko hoće sertifikata */
-        if (isSelfSigned && issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()) != null) {
-            System.out.println("Issuer already has a self signed certificate!");
-            throw new NonUniqueResultException();
-        }
+        // izvršiti proveru da li generisani serialNumber postoji u bazi podataka?
+        String serialNumber = generators.randomBigInteger().toString(); // this will be certificate's serial number and also alias for saving it in the keystore
+        SubjectData subjectData = generators.generateSubjectData(
+                serialNumber,
+                subject.getId(),
+                subject.getFirstName(),
+                subject.getLastName(),
+                subject.getOrganization(),
+                subject.getCountry(),
+                subject.getCity(),
+                subject.getEmail(),
+                keyPairSubject.getPublic(),
+                newCertificateDTO.getStartDate(),
+                newCertificateDTO.getEndDate()
+        );
 
-        Long issuerId;
-        Long subjectId;
+        /* dobavljamo issuer-a iz baze podataka sa getUserByEmail, a prosleđeno je
+         * issuerAndSubjectData.getEmailSubject() -> kako to? kako emailSubject, a issuer nam treba
+         * --> issuerAndSubjectData predstavlja podatke o issuer sertifikatu, što znači da je
+         * subject u issuerAndSubjectData naš issuer ...
+         */
+        User issuer = userService.getUserByEmail(issuerAndSubjectData.getEmailSubject());
+        IssuerData issuerData = generators.generateIssuerData(
+                issuer.getId(),
+                issuersPrivateKey,
+                issuer.getFirstName(),
+                issuer.getLastName(),
+                issuer.getOrganization(),
+                issuer.getCountry(),
+                issuer.getCity(),
+                issuer.getEmail()
+        );
 
-        /* snimanje sertifikata kao objekat klase IssuerAndSubjectData u BP
-        *
-        *  ako nije self signed, onda setujemo parentId, a ako jeste, onda ne setujemo
-        *  nego ostavimo parentId null? dobro, ovo ima smisla, mada i nema, jer možemo mi snimiti
-        *  u bazu i naknadno setovati parentId i snimiti opet
-        *
-        *  trebalo bi snimiti i javni ključ ovde */
-        if (!isSelfSigned) {
-            IssuerAndSubjectData subjectDataToDB =
-                    new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameSubject(),
-                                             issuerAndSubjectData.getLastNameSubject(),
-                                             issuerAndSubjectData.getOrganizationSubject(),
-                                             issuerAndSubjectData.getCountrySubject(),
-                                             issuerAndSubjectData.getCitySubject(),
-                                             issuerAndSubjectData.getEmailSubject(),
-                                             issuerAndSubjectData.getTypeOfEntity(),
-                                             issuerAndSubjectData.getCertificateRole(),
-                                             issuerAndSubjectData.getKeyUsage(),
-                                             issuerAndSubjectData.getExtendedKeyUsage());
-            Long parentId = issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()).getId();
-            subjectDataToDB.setParentId(parentId);
-
-            //System.out.println("extended " + issuerAndSubjectData.getExtendedKeyUsage()[0]);
-            this.issuerAndSubjectDataRepository.save(subjectDataToDB);
-            this.issuerAndSubjectDataRepository.flush();
-        } else {
-            IssuerAndSubjectData issuerDataToDB =
-                    new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameIssuer(),
-                                             issuerAndSubjectData.getLastNameIssuer(),
-                                             issuerAndSubjectData.getOrganizationIssuer(),
-                                             issuerAndSubjectData.getCountryIssuer(),
-                                             issuerAndSubjectData.getCityIssuer(),
-                                             issuerAndSubjectData.getEmailIssuer(),
-                                             issuerAndSubjectData.getTypeOfEntity(),
-                                             issuerAndSubjectData.getCertificateRole(),
-                                             issuerAndSubjectData.getKeyUsage(),
-                                             issuerAndSubjectData.getExtendedKeyUsage());
-            //System.out.println("extended " + issuerAndSubjectData.getExtendedKeyUsage()[0]);
-            this.issuerAndSubjectDataRepository.save(issuerDataToDB);
-            this.issuerAndSubjectDataRepository.flush();
-        }
-
-        /* ekstrakcija id-a upravo snimljenog sertifikata */
-        issuerId = issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()).getId();
-
-        /* ovu proveru ne treba ovako vršiti, jer ne treba na klijentu da imamo da izaberemo da li je
-         *  self signed, već ćemo da prepoznamo da li je self signed tako što je issuer = subject
-         *
-         * ovo je u suštini samo da ekstraktuje id subject-a upravo snimljenog sertifikata???? */
-        if (issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED)) {
-            subjectId = issuerId;
-        } else {
-            subjectId = issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailSubject()).getId();
-        }
-
-        /* ne generišemo key pair za issuer-a, on treba da postoji već i mi samo da ga ekstraktujemo
-        *  iz keystore-a */
-        KeyPair keyPairIssuer = generators.generateKeyPair();
-
-        /* subjectId is passed as serial number
-        *  pogledati malo tu metodu generateSubjectData i momenat u kojem se koristi X500NameBuilder */
-        SubjectData subjectData = generators.generateSubjectData(subjectId,
-                                                                 issuerAndSubjectData.getFirstNameSubject(),
-                                                                 issuerAndSubjectData.getLastNameSubject(),
-                                                                 issuerAndSubjectData.getOrganizationSubject(),
-                                                                 issuerAndSubjectData.getCountrySubject(),
-                                                                 issuerAndSubjectData.getCitySubject(),
-                                                                 issuerAndSubjectData.getEmailSubject(),
-                                                                 issuerAndSubjectData.getCertificateRole());
-
-        /* wtf do next 8 lines do? */
-        IssuerAndSubjectData temp = this.issuerAndSubjectDataRepository.findTopByOrderByIdDesc();
-        temp.setStartDate(subjectData.getStartDate());
-        temp.setExpiringDate(subjectData.getEndDate());
-
-        if (temp.getCertificateRole().equals(CertificateRole.SELF_SIGNED)) {
-            temp.setParentId(temp.getId());
-        }
-        this.issuerAndSubjectDataRepository.save(temp);
-
-        /* issuerId passed as serial number
-        *  is serial number necessary in this case?
-        *  -> why do we have serial number for subject and issuer both? */
-        IssuerData issuerData = generators.generateIssuerData(issuerId,
-                                                              keyPairIssuer.getPrivate(),
-                                                              issuerAndSubjectData.getFirstNameIssuer(),
-                                                              issuerAndSubjectData.getLastNameIssuer(),
-                                                              issuerAndSubjectData.getOrganizationIssuer(),
-                                                              issuerAndSubjectData.getCountryIssuer(),
-                                                              issuerAndSubjectData.getCityIssuer(),
-                                                              issuerAndSubjectData.getEmailIssuer());
-
-        /* issuerData treba da sadrži privatni ključ issuer-a, jer će u metodi
-        *  certificateGenerator.generateCertificate koja se poziva ispod morati da se
-        *  potpiše sertifikat koji kreiramo
-        *
-        *  nije mi jasno gde skladištimo privatni ključ upravo kreiranog sertifikata
-        *  -> aha, u keystore-u skladištimo sertifikata i njegov privatni ključ u paru
-        *  (pogledaj 5 linija ispod) */
         X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData);
+        saveCertificate(
+                certificateRole,
+                "sifra",
+                serialNumber,
+                keyStorePassword,
+                keyPairSubject.getPrivate(),
+                certificate
+        );
 
-        /* analizirati ovu metodu dole i analizirati getCertificate(alias) metodu
-        *  - metoda prima certificateRole kao 1. parametar, jer snima sertifikat
-        *  u keystore koji nosi ime certificateRole-a
-        *  - 3. parametar je alias, mi smo ovde prosledili serial number (ima smisla)
-        *  - 4. parametar je šifra kojom otključavamo keystore (ona je prosleđena
-        *  kao parametar metode issueCertificate)
-        *  - 5. parametar je privatni ključ issuera kojim potpisujemo sertifikat
-        *  - 6. parametar je sertifikat koji snimamo u sam keystore */
-        saveCertificate(issuerAndSubjectData.getCertificateRole(),
-                        "sifra",
-                        certificate.getSerialNumber().toString(),
-                        keyStorePassword,
-                        keyPairIssuer.getPrivate(),
-                        certificate);
+        IssuerAndSubjectData certificateData = new IssuerAndSubjectData(
+                serialNumber,
+                subject,
+                issuer,
+                certificateRole,
+                newCertificateDTO.getStartDate(),
+                newCertificateDTO.getEndDate()
+        );
+
+        /* čuvanje sertifikata u bazu podataka:
+         * 1) ako je sertifikat self-signed, da bismo set-ovali parentId (pošto je sam
+         * sebi parent), moramo prvo da snimimo sertifikata u bazu, pa naknadno
+         * da set-ujemo parentId i onda takvog da ga opet samo update-ujemo u bazi
+         * 2) ako nije self-signed, samo snimimo
+         */
+        if (certificateRole.equals(CertificateRole.SELF_SIGNED)) {
+            IssuerAndSubjectData data = this.issuerAndSubjectDataRepository.save(certificateData);
+            data.setParentId(data.getId());
+            this.issuerAndSubjectDataRepository.save(data);
+        } else {
+            certificateData.setParentId(issuerAndSubjectData.getId());
+            this.issuerAndSubjectDataRepository.save(certificateData);
+        }
 
         System.out.println("\n===== Podaci o izdavacu sertifikata =====");
         System.out.println(certificate.getIssuerX500Principal().getName());
@@ -197,7 +159,6 @@ public class CertificateService implements ICertificateService {
         System.out.println("-------------------------------------------------------");
         System.out.println(certificate);
         System.out.println("-------------------------------------------------------");
-
     }
 
     public void saveCertificate(CertificateRole role,
@@ -308,4 +269,30 @@ public class CertificateService implements ICertificateService {
         return this.issuerAndSubjectDataRepository.findByParentId(issuer.getId());
     }
 
+    /**
+     * It receives certificateRole in shape of a String, from client application, which should
+     * be either "CA" or "END_ENTITY". It should return CertificateRole object, but if something
+     * isn't right e.g. certificateRoleString equals to null or String other than "END_ENTITY"
+     * or "CA" then the function returns null.
+     *
+     * @param certificateRoleString String ("END_ENTITY" or "CA")
+     * @param issuersEmail          issuer's email address
+     * @param subjectsEmail         subject's email address
+     * @return                      CertificateRole object or null
+     */
+    public CertificateRole getCertificateRole(String certificateRoleString,
+                                              String issuersEmail,
+                                              String subjectsEmail) {
+        if (certificateRoleString.equals("END_ENTITY")) {
+            return CertificateRole.END_ENTITY;
+        } else if (certificateRoleString.equals("CA")) {
+            if (issuersEmail.equals(subjectsEmail)) {
+                return CertificateRole.SELF_SIGNED;
+            } else {
+                return CertificateRole.INTERMEDIATE;
+            }
+        }
+
+        return null;
+    }
 }
