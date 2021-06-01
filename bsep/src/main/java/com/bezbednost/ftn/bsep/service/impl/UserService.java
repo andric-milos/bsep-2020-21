@@ -74,4 +74,12 @@ public class UserService implements UserDetailsService {
     public List<User> getAll() {
         return userRepository.findAll();
     }
+
+    User getUserById(Long userId) {
+        return this.userRepository.getOne(userId);
+    }
+
+    User getUserByEmail(String email) {
+        return this.userRepository.findByEmail(email).get();
+    }
 }
