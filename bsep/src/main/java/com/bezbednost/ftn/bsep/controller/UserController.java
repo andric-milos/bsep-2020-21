@@ -1,5 +1,6 @@
 package com.bezbednost.ftn.bsep.controller;
 
+import com.bezbednost.ftn.bsep.dto.StringDTO;
 import com.bezbednost.ftn.bsep.dto.UserDTO;
 import com.bezbednost.ftn.bsep.model.User;
 import com.bezbednost.ftn.bsep.service.impl.UserService;
@@ -38,4 +39,11 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
+    @GetMapping(value = "/getEmailFromJwtToken")
+    public ResponseEntity<?> getEmailFromJwtToken() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) auth.getPrincipal();
+
+        return new ResponseEntity<StringDTO>(new StringDTO(user.getEmail()), HttpStatus.OK);
+    }
 }
