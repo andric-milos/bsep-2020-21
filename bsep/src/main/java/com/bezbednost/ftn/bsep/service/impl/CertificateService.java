@@ -2,6 +2,7 @@ package com.bezbednost.ftn.bsep.service.impl;
 
 import com.bezbednost.ftn.bsep.certificate.CertificateGenerator;
 import com.bezbednost.ftn.bsep.certificate.Generators;
+import com.bezbednost.ftn.bsep.dto.CertificateDTO;
 import com.bezbednost.ftn.bsep.dto.NewCertificateDTO;
 import com.bezbednost.ftn.bsep.model.*;
 import com.bezbednost.ftn.bsep.repository.IssuerAndSubjectDataRepository;
@@ -508,5 +509,37 @@ public class CertificateService implements ICertificateService {
         System.out.println("-------------------------------------------------------");
         System.out.println(certificate);
         System.out.println("-------------------------------------------------------");
+    }
+
+    /* Email is passed as a parameter, and return value is list of all
+     *  "CA" or "INTERMEDIATE" certificates that user with given email has. */
+    public List<CertificateDTO> getAllAuthorityCertificatesByEmail(String email) {
+        List<IssuerAndSubjectData> certificates = (List<IssuerAndSubjectData>) this.issuerAndSubjectDataRepository.getAllAuthorityCertificatesByEmail(email);
+
+        List<CertificateDTO> certificateDTOList = new ArrayList<>();
+        for (IssuerAndSubjectData c : certificates) {
+            CertificateDTO certificateDTO = new CertificateDTO(
+                    c.getId(),
+                    c.getAlias(),
+                    c.getCertificateRole().toString(),
+                    c.getParentId(),
+                    c.getFirstNameIssuer(),
+                    c.getLastNameIssuer(),
+                    c.getOrganizationIssuer(),
+                    c.getCountryIssuer(),
+                    c.getCityIssuer(),
+                    c.getEmailIssuer(),
+                    c.getFirstNameSubject(),
+                    c.getLastNameSubject(),
+                    c.getOrganizationSubject(),
+                    c.getCountrySubject(),
+                    c.getCitySubject(),
+                    c.getEmailSubject()
+            );
+
+            certificateDTOList.add(certificateDTO);
+        }
+
+        return certificateDTOList;
     }
 }
