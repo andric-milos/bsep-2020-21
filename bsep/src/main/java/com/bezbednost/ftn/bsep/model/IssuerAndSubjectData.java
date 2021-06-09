@@ -17,6 +17,7 @@ public class IssuerAndSubjectData {
     @Column(name = "id")
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String alias;
 
     private String firstNameIssuer;

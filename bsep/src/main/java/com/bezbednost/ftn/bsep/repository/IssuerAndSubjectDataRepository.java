@@ -22,5 +22,7 @@ public interface IssuerAndSubjectDataRepository  extends JpaRepository<IssuerAnd
 
     IssuerAndSubjectData findTopByOrderByIdDesc();
 
+    IssuerAndSubjectData findByAlias(String alias);
+
 }
 
