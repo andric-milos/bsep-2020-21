@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.text.ParseException;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -76,6 +77,30 @@ public class CertificateController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping(value = "/issueDefaultCertificate")
+    public ResponseEntity<?> issueDefaultCertificate() {
+        try {
+            this.certificateService.issueDefaultCertificate();
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        }
+
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }

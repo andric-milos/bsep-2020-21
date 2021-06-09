@@ -18,6 +18,8 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -52,20 +54,23 @@ public class CertificateService implements ICertificateService {
          * issuerAndSubjectData predstavlja podatke o issuer sertifikatu, što znači
          * da je on tu subject ...
          */
-        CertificateRole certificateRole = getCertificateRole(
+        CertificateRole subjectCertificateRole = getCertificateRole(
                 newCertificateDTO.getCertificateType(),
                 issuerAndSubjectData.getEmailSubject(),
                 subject.getEmail()
         );
 
-        /* provera da li keystore postoji
-         * ako ne postoji kreirati ga? */
-        KeyStore keyStore = null;
-        if (this.keyStoreService.doesKeyStoreExist(certificateRole.toString())) {
+        CertificateRole issuerCertificateRole = issuerAndSubjectData.getCertificateRole();
+
+        /* else scenario: ako keystore ne postoji, kreirati ga sa lozinkom koja je prosleđena sa klijenta,
+         * malo je glupo, ali svakako ne bi ni trebalo da dođe do ovog scenaria, osim pri inicijalnom
+         * kreiranju keystore-eva ... */
+        KeyStore keyStoreSubject = null;
+        if (this.keyStoreService.doesKeyStoreExist(subjectCertificateRole.toString())) {
             try {
                 System.out.println("Success!");
-                keyStore = KeyStore.getInstance("JKS", "SUN");
-                keyStore.load(new FileInputStream("src/main/resources/keystores/" + certificateRole.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
+                keyStoreSubject = KeyStore.getInstance("JKS", "SUN");
+                keyStoreSubject.load(new FileInputStream("src/main/resources/keystores/" + subjectCertificateRole.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
             } catch (IOException e) {
                 System.out.println("Wrong password!");
                 throw new KeyStoreException();
@@ -76,10 +81,51 @@ public class CertificateService implements ICertificateService {
                 System.out.println("Algorithm couldn't be found!!");
                 throw new KeyStoreException();
             }
+        } else {
+            try {
+                keyStoreSubject = KeyStore.getInstance("JKS", "SUN");
+                String file = ("src/main/resources/keystores/" + subjectCertificateRole.toString().toLowerCase() + ".jks");
+
+                keyStoreSubject.load(null, keyStorePassword.toCharArray());
+                keyStoreSubject.store(new FileOutputStream(file), keyStorePassword.toCharArray());
+            } catch (KeyStoreException | NoSuchProviderException | IOException | NoSuchAlgorithmException | CertificateException e) {
+                e.printStackTrace();
+            }
         }
 
-        assert keyStore != null;
-        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(issuerAndSubjectData.getAlias(), new KeyStore.PasswordProtection(keyStorePassword.toCharArray()));
+        /* obično su issuer-ov sertifikat i ovaj koji će on upravo da izda različitog CertificateRole-a
+        *  -> zato moramo da loadujemo dva keystore-a, jer ćemo u jedan da sačuvamo upravo izdati
+        *  sertifikat, a drugi keystore nam treba da učitamo PrivateKey issuer-a */
+        KeyStore keyStoreIssuer = null;
+        if (this.keyStoreService.doesKeyStoreExist(subjectCertificateRole.toString())) {
+            try {
+                System.out.println("Success!");
+                keyStoreIssuer = KeyStore.getInstance("JKS", "SUN");
+                keyStoreIssuer.load(new FileInputStream("src/main/resources/keystores/" + issuerCertificateRole.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
+            } catch (IOException e) {
+                System.out.println("Wrong password!");
+                throw new KeyStoreException();
+            } catch (CertificateException e) {
+                System.out.println("Certificate couldn't be loaded!");
+                throw new KeyStoreException();
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("Algorithm couldn't be found!!");
+                throw new KeyStoreException();
+            }
+        } else {
+            try {
+                keyStoreIssuer = KeyStore.getInstance("JKS", "SUN");
+                String file = ("src/main/resources/keystores/" + subjectCertificateRole.toString().toLowerCase() + ".jks");
+
+                keyStoreIssuer.load(null, keyStorePassword.toCharArray());
+                keyStoreIssuer.store(new FileOutputStream(file), keyStorePassword.toCharArray());
+            } catch (KeyStoreException | NoSuchProviderException | IOException | NoSuchAlgorithmException | CertificateException e) {
+                e.printStackTrace();
+            }
+        }
+
+        assert keyStoreIssuer != null;
+        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStoreIssuer.getEntry(issuerAndSubjectData.getAlias(), new KeyStore.PasswordProtection("sifra".toCharArray())); // svaki put kada snimamo novi KeyEntry u keystore, uvek stavimo da je lozinka "sifra", zato ovde otključavamo sa baš tom lozinkom
         PrivateKey issuersPrivateKey = entry.getPrivateKey();
 
         KeyPair keyPairSubject = generators.generateKeyPair();
@@ -119,7 +165,7 @@ public class CertificateService implements ICertificateService {
 
         X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData);
         saveCertificate(
-                certificateRole,
+                subjectCertificateRole,
                 "sifra",
                 serialNumber,
                 keyStorePassword,
@@ -131,7 +177,7 @@ public class CertificateService implements ICertificateService {
                 serialNumber,
                 subject,
                 issuer,
-                certificateRole,
+                subjectCertificateRole,
                 newCertificateDTO.getStartDate(),
                 newCertificateDTO.getEndDate()
         );
@@ -142,7 +188,7 @@ public class CertificateService implements ICertificateService {
          * da set-ujemo parentId i onda takvog da ga opet samo update-ujemo u bazi
          * 2) ako nije self-signed, samo snimimo
          */
-        if (certificateRole.equals(CertificateRole.SELF_SIGNED)) {
+        if (subjectCertificateRole.equals(CertificateRole.SELF_SIGNED)) {
             IssuerAndSubjectData data = this.issuerAndSubjectDataRepository.save(certificateData);
             data.setParentId(data.getId());
             this.issuerAndSubjectDataRepository.save(data);
@@ -182,7 +228,7 @@ public class CertificateService implements ICertificateService {
             System.out.println("File not found!");
             createKeyStore(name, keyStorePassword, keyStore);
         } catch (IOException e) {
-            System.out.println("Wrong password!");
+            System.out.println("CertificateService [method: saveCertificate] : Wrong password!");
         } catch (NoSuchAlgorithmException | CertificateException e) {
             e.printStackTrace();
         }
@@ -294,5 +340,173 @@ public class CertificateService implements ICertificateService {
         }
 
         return null;
+    }
+
+    /* this method serves for issuing certificates outside of the client
+    *  (using fixed data inside of the method - of course, that data should
+    *  be valid and existing in the database, otherwise the method will throw
+    *  an error or an exception */
+    public void issueDefaultCertificate() throws KeyStoreException, ParseException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, IOException, UnrecoverableEntryException {
+        CertificateRole certificateRoleSubject = CertificateRole.INTERMEDIATE;
+        CertificateRole certificateRoleIssuer = CertificateRole.SELF_SIGNED;
+        String keyStorePassword = "JKSSifra";  // KOJA JE ŠIFRA ZA KEYSTORE?
+        String issuerAlias = "3757053589842";
+
+        User user = new User();
+        user.setId(3L);
+        user.setFirstName("Milos");
+        user.setLastName("Andric");
+        user.setOrganization("ftn");
+        user.setCountry("Serbia");
+        user.setCity("Novi Sad");
+        user.setEmail("milos@gmail.com");
+
+        User user2 = new User();
+        user2.setId(2L);
+        user2.setFirstName("Admin");
+        user2.setLastName("Admin");
+        user2.setOrganization("admin");
+        user2.setCountry("Serbia");
+        user2.setCity("Novi Sad");
+        user2.setEmail("admin@gmail.com");
+
+        KeyStore keyStoreSubject = null;
+        if (this.keyStoreService.doesKeyStoreExist(certificateRoleSubject.toString())) {
+            try {
+                System.out.println("Success!");
+                keyStoreSubject = KeyStore.getInstance("JKS", "SUN");
+                keyStoreSubject.load(new FileInputStream("src/main/resources/keystores/" + certificateRoleSubject.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
+            } catch (IOException e) {
+                System.out.println("Wrong password!");
+                throw new KeyStoreException();
+            } catch (CertificateException e) {
+                System.out.println("Certificate couldn't be loaded!");
+                throw new KeyStoreException();
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("Algorithm couldn't be found!!");
+                throw new KeyStoreException();
+            } catch (NoSuchProviderException e) {
+                System.out.println("Provider couldn't be found!!");
+                throw new KeyStoreException();
+            }
+        } else {
+            try {
+                keyStoreSubject = KeyStore.getInstance("JKS", "SUN");
+                String file = ("src/main/resources/keystores/" + certificateRoleSubject.toString().toLowerCase() + ".jks");
+
+                keyStoreSubject.load(null, keyStorePassword.toCharArray());
+                keyStoreSubject.store(new FileOutputStream(file), keyStorePassword.toCharArray());
+            } catch (KeyStoreException | NoSuchProviderException | IOException | NoSuchAlgorithmException | CertificateException e) {
+                e.printStackTrace();
+            }
+        }
+
+        KeyStore keyStoreIssuer = null;
+        if (this.keyStoreService.doesKeyStoreExist(certificateRoleIssuer.toString())) {
+            try {
+                System.out.println("Success!");
+                keyStoreIssuer = KeyStore.getInstance("JKS", "SUN");
+                keyStoreIssuer.load(new FileInputStream("src/main/resources/keystores/" + certificateRoleIssuer.toString().toLowerCase() + ".jks"), keyStorePassword.toCharArray());
+            } catch (IOException e) {
+                System.out.println("Wrong password!");
+                throw new KeyStoreException();
+            } catch (CertificateException e) {
+                System.out.println("Certificate couldn't be loaded!");
+                throw new KeyStoreException();
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("Algorithm couldn't be found!!");
+                throw new KeyStoreException();
+            } catch (NoSuchProviderException e) {
+                System.out.println("Provider couldn't be found!!");
+                throw new KeyStoreException();
+            }
+        } else {
+            try {
+                keyStoreIssuer = KeyStore.getInstance("JKS", "SUN");
+                String file = ("src/main/resources/keystores/" + certificateRoleIssuer.toString().toLowerCase() + ".jks");
+
+                keyStoreIssuer.load(null, keyStorePassword.toCharArray());
+                keyStoreIssuer.store(new FileOutputStream(file), keyStorePassword.toCharArray());
+            } catch (KeyStoreException | NoSuchProviderException | IOException | NoSuchAlgorithmException | CertificateException e) {
+                e.printStackTrace();
+            }
+        }
+
+        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStoreIssuer.getEntry(issuerAlias, new KeyStore.PasswordProtection("sifra".toCharArray()));
+        PrivateKey issuersPrivateKey = entry.getPrivateKey();
+
+        KeyPair keyPairSubject = generators.generateKeyPair();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        String startDateString = "01-01-2000";
+        String endDateString = "01-01-2050";
+        Date startDate = sdf.parse(startDateString);
+        Date endDate = sdf.parse(endDateString);
+
+        // izvršiti proveru da li generisani serialNumber postoji u bazi podataka?
+        String serialNumber = generators.randomBigInteger().toString(); // this will be certificate's serial number and also alias for saving it in the keystore
+        SubjectData subjectData = generators.generateSubjectData(
+                serialNumber,
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getOrganization(),
+                user.getCountry(),
+                user.getCity(),
+                user.getEmail(),
+                keyPairSubject.getPublic(),
+                startDate,
+                endDate
+        );
+
+        IssuerData issuerData = generators.generateIssuerData(
+                user2.getId(),
+                issuersPrivateKey,
+                user2.getFirstName(),
+                user2.getLastName(),
+                user2.getOrganization(),
+                user2.getCountry(),
+                user2.getCity(),
+                user2.getEmail()
+        );
+
+        X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData);
+        saveCertificate(
+                certificateRoleSubject,
+                "sifra",
+                serialNumber,
+                keyStorePassword,
+                keyPairSubject.getPrivate(),
+                certificate
+        );
+
+        IssuerAndSubjectData certificateData = new IssuerAndSubjectData(
+                serialNumber,
+                user,
+                user2,
+                certificateRoleSubject,
+                startDate,
+                endDate
+        );
+
+        if (certificateRoleSubject.equals(CertificateRole.SELF_SIGNED)) {
+            // ovo ovako, jer je self-signed, pa moramo naknadno set-ovati parentId
+            IssuerAndSubjectData data = this.issuerAndSubjectDataRepository.save(certificateData);
+            data.setParentId(data.getId());
+            this.issuerAndSubjectDataRepository.save(data);
+        } else {
+            IssuerAndSubjectData issuerCertificateData = issuerAndSubjectDataRepository.findByAlias(issuerAlias);
+            certificateData.setParentId(issuerCertificateData.getId());
+            this.issuerAndSubjectDataRepository.save(certificateData);
+        }
+
+        System.out.println("\n===== Podaci o izdavacu sertifikata =====");
+        System.out.println(certificate.getIssuerX500Principal().getName());
+        System.out.println("\n===== Podaci o vlasniku sertifikata =====");
+        System.out.println(certificate.getSubjectX500Principal().getName());
+        System.out.println("\n===== Certificates =====");
+        System.out.println("-------------------------------------------------------");
+        System.out.println(certificate);
+        System.out.println("-------------------------------------------------------");
     }
 }
