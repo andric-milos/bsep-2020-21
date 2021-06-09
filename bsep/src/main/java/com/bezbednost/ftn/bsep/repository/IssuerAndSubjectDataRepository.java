@@ -24,7 +24,7 @@ public interface IssuerAndSubjectDataRepository  extends JpaRepository<IssuerAnd
 
     IssuerAndSubjectData findByAlias(String alias);
 
-    @Query(value = "SELECT * FROM issuer_and_subject_data d WHERE d.certificate_role = 'SELF_SIGNED' OR d.certificate_role = 'INTERMEDIATE' AND d.email_subject = :email", nativeQuery = true)
+    @Query(value = "SELECT * FROM issuer_and_subject_data d WHERE (d.certificate_role = 'SELF_SIGNED' OR d.certificate_role = 'INTERMEDIATE') AND d.email_subject = :email", nativeQuery = true)
     Collection<IssuerAndSubjectData> getAllAuthorityCertificatesByEmail(String email);
 
 }
