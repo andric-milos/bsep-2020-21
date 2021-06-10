@@ -9,10 +9,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.text.ParseException;
 import java.util.Collection;
 
 public interface ICertificateService {
-    void issueCertificate(NewCertificateDTO newCertificateDTO) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException, UnrecoverableEntryException;
+    void issueCertificate(NewCertificateDTO newCertificateDTO) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException, UnrecoverableEntryException, ParseException;
     Collection<IssuerAndSubjectData> getCertificates();
     void withdrawCertificate(String email);
     Collection<IssuerAndSubjectData> GetChildCertificate (String email);

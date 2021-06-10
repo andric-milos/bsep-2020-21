@@ -7,6 +7,7 @@ import com.bezbednost.ftn.bsep.dto.NewCertificateDTO;
 import com.bezbednost.ftn.bsep.model.*;
 import com.bezbednost.ftn.bsep.repository.IssuerAndSubjectDataRepository;
 import com.bezbednost.ftn.bsep.service.ICertificateService;
+import com.bezbednost.ftn.bsep.validation.NewCertificateDTOValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +45,12 @@ public class CertificateService implements ICertificateService {
     }
 
     @Override
-    public void issueCertificate(NewCertificateDTO newCertificateDTO) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException, UnrecoverableEntryException {
+    public void issueCertificate(NewCertificateDTO newCertificateDTO) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException, UnrecoverableEntryException, ParseException {
+        if (!NewCertificateDTOValidator.validate(newCertificateDTO)) {
+            // log
+            return;
+        }
+
         // repository.getOne throws EntityNotFoundException if entity isn't found
         IssuerAndSubjectData issuerAndSubjectData = issuerAndSubjectDataRepository.getOne(newCertificateDTO.getId());
         String keyStorePassword = newCertificateDTO.getKeyStorePassword();
@@ -131,6 +137,11 @@ public class CertificateService implements ICertificateService {
 
         KeyPair keyPairSubject = generators.generateKeyPair();
 
+        /* conversion from String to Date */
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDate = dateFormat.parse(newCertificateDTO.getStartDate());
+        Date endDate = dateFormat.parse(newCertificateDTO.getEndDate());
+
         // izvršiti proveru da li generisani serialNumber postoji u bazi podataka?
         String serialNumber = generators.randomBigInteger().toString(); // this will be certificate's serial number and also alias for saving it in the keystore
         SubjectData subjectData = generators.generateSubjectData(
@@ -143,8 +154,8 @@ public class CertificateService implements ICertificateService {
                 subject.getCity(),
                 subject.getEmail(),
                 keyPairSubject.getPublic(),
-                newCertificateDTO.getStartDate(),
-                newCertificateDTO.getEndDate()
+                startDate,
+                endDate
         );
 
         /* dobavljamo issuer-a iz baze podataka sa getUserByEmail, a prosleđeno je
@@ -179,8 +190,8 @@ public class CertificateService implements ICertificateService {
                 subject,
                 issuer,
                 subjectCertificateRole,
-                newCertificateDTO.getStartDate(),
-                newCertificateDTO.getEndDate()
+                startDate,
+                endDate
         );
 
         /* čuvanje sertifikata u bazu podataka:

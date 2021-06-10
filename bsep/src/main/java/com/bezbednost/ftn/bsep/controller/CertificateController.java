@@ -38,7 +38,7 @@ public class CertificateController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        } catch (NoSuchAlgorithmException | CertificateException | NoSuchProviderException | UnrecoverableEntryException e) {
+        } catch (NoSuchAlgorithmException | CertificateException | NoSuchProviderException | UnrecoverableEntryException | ParseException e) {
             e.printStackTrace();
         } catch (KeyStoreException e) {
             return new ResponseEntity<>("Password is incorrect! Please try again.", HttpStatus.BAD_REQUEST);

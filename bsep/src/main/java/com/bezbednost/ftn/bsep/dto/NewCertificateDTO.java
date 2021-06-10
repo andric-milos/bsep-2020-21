@@ -16,6 +16,6 @@ public class NewCertificateDTO {
     private Long subjectID;
     private String certificateType;
     private String keyStorePassword;
-    private Date startDate;
-    private Date endDate;
+    private String startDate;
+    private String endDate;
 }
