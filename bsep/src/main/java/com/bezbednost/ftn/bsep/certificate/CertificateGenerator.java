@@ -35,7 +35,6 @@ public class CertificateGenerator {
 
             builder = builder.setProvider("BC");
 
-
             //Formira se objekat koji ce sadrzati privatni kljuc i koji ce se koristiti za potpisivanje sertifikata
             ContentSigner contentSigner = builder.build(issuerData.getPrivateKey());
 
