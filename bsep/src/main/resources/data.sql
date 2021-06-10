@@ -65,3 +65,13 @@ INSERT INTO `bsep`.`issuer_and_subject_data`
 'Serbia', 'Serbia', 'admin@gmail.com', 'milos@gmail.com', '2049-12-31 23:00:00.000000',
 'Admin', 'Milos', 'Admin', 'Andric',
 'admin', 'ftn', '1', '1999-12-31 23:00:00.000000');
+
+INSERT INTO `bsep`.`issuer_and_subject_data`
+(`id`, `alias`, `certificate_role`, `certificate_status`, `city_issuer`, `city_subject`,
+`country_issuer`, `country_subject`, `email_issuer`, `email_subject`, `expiring_date`,
+`first_name_issuer`, `first_name_subject`, `last_name_issuer`, `last_name_subject`,
+`organization_issuer`, `organization_subject`, `parent_id`, `start_date`) VALUES
+('5', '669383220701', 'END_ENTITY', null, 'Novi Sad', 'Manchester',
+'Serbia', 'England', 'milos@gmail.com', 'scholes@gmail.com', '2022-12-16 23:00:00.000000',
+'Milos', 'Paul', 'Andric', 'Scholes',
+'ftn', 'manutd', '4', '2021-06-09 22:00:00.000000');
