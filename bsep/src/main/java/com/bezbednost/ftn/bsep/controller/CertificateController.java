@@ -3,6 +3,8 @@ package com.bezbednost.ftn.bsep.controller;
 import com.bezbednost.ftn.bsep.model.IssuerAndSubjectData;
 import com.bezbednost.ftn.bsep.model.User;
 import com.bezbednost.ftn.bsep.service.impl.CertificateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.time.LocalDateTime;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -24,17 +27,29 @@ public class CertificateController {
 
     @Autowired
     private CertificateService certificateService;
+
+    Logger logger = LoggerFactory.getLogger(CertificateController.class);
+
     @PostMapping(value = "/{keyStorePassword}")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> issueCertificate(@RequestBody IssuerAndSubjectData issuerAndSubjectData, @PathVariable("keyStorePassword") String keyStorePassword) {
+        logger.info("Date : {}, A user with email : {} has tried to make certificate.", LocalDateTime.now(), issuerAndSubjectData.getEmailIssuer());
         try {
+            logger.info("Date : {}, Successfully issued certificate!" + "Issuer email : {}." +
+                    "Subject email : {}.", LocalDateTime.now(), issuerAndSubjectData.getEmailIssuer(), issuerAndSubjectData.getEmailSubject());
             this.certificateService.issueCertificate(issuerAndSubjectData, keyStorePassword);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IOException e) {
+            logger.error("Date : {}, Error while creating certificate. " +
+                    "Error : {}.", LocalDateTime.now(), e.toString());
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         } catch (NoSuchAlgorithmException | CertificateException | NoSuchProviderException e) {
+            logger.error("Date : {}, Error while creating certificate. " +
+                    "Error : {}.", LocalDateTime.now(), e.toString());
             e.printStackTrace();
         } catch (KeyStoreException e) {
+            logger.error("Date : {}, Password is incorrect!" +
+                    "Issuer email : {}." + "Subject email : {}." + "Password : {}.", LocalDateTime.now(), issuerAndSubjectData.getEmailIssuer(), issuerAndSubjectData.getEmailSubject(), keyStorePassword);
             return new ResponseEntity<>("Password is incorrect! Please try again.", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -43,9 +58,14 @@ public class CertificateController {
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getCertificates() {
+        /// treba dodati email admina mozda
+        logger.info("Date : {}, An admin has requested all certificate.", LocalDateTime.now());
         try {
+            logger.info("Date : {}, Successfully returned list of all certificate requests.", LocalDateTime.now());
             return new ResponseEntity<>(this.certificateService.getCertificates(), HttpStatus.OK);
         } catch (Exception e) {
+            logger.error("Date : {}, Error while returning list of all certificate requests. " +
+                    "Error : {}.", LocalDateTime.now(), e.toString());
             e.printStackTrace();
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -54,10 +74,14 @@ public class CertificateController {
     @PutMapping(value="/withdraw/{certificateEmail}")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> withdrawCertificate(@PathVariable("certificateEmail") String certificateEmail){
+        logger.info("Date : {}, A user has requested to withdraw certificate." + "Certificate email : {}.", LocalDateTime.now(), certificateEmail);
         try {
+            logger.info("Date : {}, A user withdraw certificate." + "Certificate email : {}.", LocalDateTime.now(), certificateEmail);
             this.certificateService.withdrawCertificate(certificateEmail);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            logger.error("Date : {}, Error while withdraw a certificate. " +
+                    "Error : {}.", LocalDateTime.now(), e.toString());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -65,11 +89,15 @@ public class CertificateController {
     @GetMapping(value="/children")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> getChildCertificates() {
+        logger.info("Date : {}, A user has requested all child certificate.", LocalDateTime.now());
         try {
+            logger.info("Date : {}, Successfully returned list of all child certificate requests.", LocalDateTime.now());
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User user = (User) auth.getPrincipal();
             return new ResponseEntity<>(this.certificateService.GetChildCertificate(user.getUsername()), HttpStatus.OK);
         } catch (Exception e) {
+            logger.error("Date : {}, Error while returning list of all child certificate requests. " +
+                    "Error : {}.", LocalDateTime.now(), e.toString());
             e.printStackTrace();
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
