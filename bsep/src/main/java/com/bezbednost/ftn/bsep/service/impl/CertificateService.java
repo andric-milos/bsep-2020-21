@@ -31,7 +31,6 @@ public class CertificateService implements ICertificateService {
     private UserService userService;
 
     private Generators generators = new Generators();
-
     private CertificateGenerator certificateGenerator = new CertificateGenerator();
 
     private IssuerAndSubjectDataRepository issuerAndSubjectDataRepository;
@@ -89,34 +88,6 @@ public class CertificateService implements ICertificateService {
                 System.out.println("Algorithm couldn't be found!!");
                 throw new KeyStoreException();
             }
-        }
-
-        if (issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailSubject()) != null) {
-            System.out.println("Subject already exists!");
-            throw new NonUniqueResultException();
-        }
-        boolean isSelfSigned = issuerAndSubjectData.getCertificateRole().equals(CertificateRole.SELF_SIGNED);
-
-        if (isSelfSigned && issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()) != null) {
-            System.out.println("Issuer already has a self signed certificate!");
-            throw new NonUniqueResultException();
-        }
-
-        Long issuerId;
-        Long subjectId;
-
-        // saving to db
-        if (!isSelfSigned) {
-            IssuerAndSubjectData subjectDataToDB = new IssuerAndSubjectData(issuerAndSubjectData.getFirstNameSubject(), issuerAndSubjectData.getLastNameSubject(),
-                    issuerAndSubjectData.getOrganizationSubject(), issuerAndSubjectData.getCountrySubject(),
-                    issuerAndSubjectData.getCitySubject(), issuerAndSubjectData.getEmailSubject(), issuerAndSubjectData.getTypeOfEntity(),
-                    issuerAndSubjectData.getCertificateRole(), issuerAndSubjectData.getKeyUsage(), issuerAndSubjectData.getExtendedKeyUsage());
-            Long parentId = issuerAndSubjectDataRepository.findByEmail(issuerAndSubjectData.getEmailIssuer()).getId();
-            subjectDataToDB.setParentId(parentId);
-
-            //System.out.println("extended " + issuerAndSubjectData.getExtendedKeyUsage()[0]);
-            this.issuerAndSubjectDataRepository.save(subjectDataToDB);
-            this.issuerAndSubjectDataRepository.flush();
         } else {
             try {
                 keyStoreSubject = KeyStore.getInstance("JKS", "SUN");
@@ -130,8 +101,8 @@ public class CertificateService implements ICertificateService {
         }
 
         /* obično su issuer-ov sertifikat i ovaj koji će on upravo da izda različitog CertificateRole-a
-        *  -> zato moramo da loadujemo dva keystore-a, jer ćemo u jedan da sačuvamo upravo izdati
-        *  sertifikat, a drugi keystore nam treba da učitamo PrivateKey issuer-a */
+         *  -> zato moramo da loadujemo dva keystore-a, jer ćemo u jedan da sačuvamo upravo izdati
+         *  sertifikat, a drugi keystore nam treba da učitamo PrivateKey issuer-a */
         KeyStore keyStoreIssuer = null;
         if (this.keyStoreService.doesKeyStoreExist(subjectCertificateRole.toString())) {
             try {
@@ -246,7 +217,6 @@ public class CertificateService implements ICertificateService {
         System.out.println("-------------------------------------------------------");
         System.out.println(certificate);
         System.out.println("-------------------------------------------------------");
-
     }
 
     public void saveCertificate(CertificateRole role,
@@ -255,11 +225,11 @@ public class CertificateService implements ICertificateService {
                                 String keyStorePassword,
                                 PrivateKey privateKey,
                                 X509Certificate certificate) throws
-                                NoSuchProviderException,
-                                KeyStoreException,
-                                IOException,
-                                CertificateException,
-                                NoSuchAlgorithmException {
+            NoSuchProviderException,
+            KeyStoreException,
+            IOException,
+            CertificateException,
+            NoSuchAlgorithmException {
         String name = role.toString().toLowerCase();
         String file = ("src/main/resources/keystores/" + name + ".jks");
         KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
@@ -385,9 +355,9 @@ public class CertificateService implements ICertificateService {
     }
 
     /* this method serves for issuing certificates outside of the client
-    *  (using fixed data inside of the method - of course, that data should
-    *  be valid and existing in the database, otherwise the method will throw
-    *  an error or an exception */
+     *  (using fixed data inside of the method - of course, that data should
+     *  be valid and existing in the database, otherwise the method will throw
+     *  an error or an exception */
     public void issueDefaultCertificate() throws KeyStoreException, ParseException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, IOException, UnrecoverableEntryException {
         CertificateRole certificateRoleSubject = CertificateRole.INTERMEDIATE;
         CertificateRole certificateRoleIssuer = CertificateRole.SELF_SIGNED;

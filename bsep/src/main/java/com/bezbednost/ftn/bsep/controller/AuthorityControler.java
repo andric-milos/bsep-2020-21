@@ -34,19 +34,19 @@ public class AuthorityControler {
 
     @PostMapping(value = "/login")
     public ResponseEntity<UserTokenState> login(@RequestBody JwtAuthenticationRequest authenticationRequest) {
-        logger.info("Date : {}, A user tried to login with email : {}.", LocalDateTime.now(), authenticationRequest.getEmail());
+        logger.info("A user tried to login with email : {}.", authenticationRequest.getEmail());
         try {
             UserTokenState userTokenState = authorityService.login(authenticationRequest);
             if (userTokenState == null) {
-                logger.error("Date : {}, A user with email : {} does not exist.", LocalDateTime.now(), authenticationRequest.getEmail());
+                logger.error("A user with email : {} does not exist.", authenticationRequest.getEmail());
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-            logger.info("Date : {}, A user with email : {} has successfully logged in.", LocalDateTime.now(), authenticationRequest.getEmail());
+            logger.info("A user with email : {} has successfully logged in.", authenticationRequest.getEmail());
             return new ResponseEntity<>(userTokenState, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        logger.error("Date : {}, Unsuccessful log in. A user with email : {} does not exist.", LocalDate.now(), authenticationRequest.getEmail());
+        logger.error("Unsuccessful log in. A user with email : {}", authenticationRequest.getEmail());
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
