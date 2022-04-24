@@ -14,5 +14,5 @@ Functionalities which this project covers:
 * Resistance to CSRF (Cross Site Request Forgery).
 * Spring Security & JWT tokens.
 * Use of hash algorithms for storing passwords.
-* Implementation of e-mail confirmation then registering.
+* Implementation of e-mail confirmation when registering.
 * OWASP dependency check.
