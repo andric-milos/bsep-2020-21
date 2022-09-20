@@ -1,4 +1,4 @@
-# bsep-2020-21
+# Faculty Course "E-Business Systems Security" project
 
 2020-21 faculty course "E-Business Systems Security" project on Faculty of Tehcnical Sciences (University of Novi Sad)
 
